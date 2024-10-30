@@ -72,7 +72,6 @@ export const useAddressesStore = defineStore('addresses', {
 				const { data } = await axios.get(
 					`https://viacep.com.br/ws/${this[index].cep.value}/json/`,
 				)
-				console.log(data)
 
 				if (!data) {
 					this[index].cep.valid = 'Erro na busca do banco de dados'
@@ -99,24 +98,38 @@ export const useAddressesStore = defineStore('addresses', {
 				throw err
 			}
 		},
-		pushAddress(
-			address: AddressFieldsProps[],
-			pushOrEdit: boolean,
-			index: number,
-		) {
-			if (address[index].cep?.value?.length !== 8)
-				throw new Error('CEP inválido')
-			if (address[index].logradouro.valid?.length !== 0)
-				throw new Error('Logradouro inválido')
-			if (address[index].uf.valid?.length !== 0) throw new Error('UF inválido')
-			if (address[index].numero?.valid.length !== 0)
-				throw new Error('Numero inválido')
+		checkAddress(address: AddressFieldsProps[], index: number) {
+			if (
+				address[index].cep?.value?.length !== 8 &&
+				address[index].logradouro.valid?.length !== 0 &&
+				address[index].uf.valid?.length !== 0 &&
+				address[index].numero?.valid.length !== 0
+			)
+				return true
 
-			if (pushOrEdit) {
-				address.push(address[index])
-			} else {
-				address[index] = address[index]
-			}
+			return false
+		},
+		deleteAddress(index: number) {
+			console.log('remove', this.$state)
+
+			this.$patch(state => {
+				state.splice(index, 1)
+			})
+		},
+		editAddress(addresses: AddressFieldsProps[], index: number) {
+			console.log('edit', this.$state)
+
+			if (this.checkAddress(addresses, index)) return
+			addresses[index] = addresses[index]
+		},
+		pushAddress(addresses: AddressFieldsProps[], index: number) {
+			console.log('push', this.$state)
+
+			if (this.checkAddress(addresses, index)) return
+
+			this.$patch(state => {
+				state.push(addresses[index])
+			})
 		},
 	},
 })

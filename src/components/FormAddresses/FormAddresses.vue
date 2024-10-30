@@ -15,8 +15,6 @@ const props = defineProps({
 
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
-
-console.log(props.index)
 </script>
 
 <template>
@@ -25,7 +23,11 @@ console.log(props.index)
 		@submit.prevent="
 			() => {
 				if (props.index >= 0 && props.index < addresses.$state.length) {
-					addresses.pushAddress(addresses.$state, props.push, props.index)
+					if (props.push) {
+						addresses.pushAddress(addresses.$state, props.index)
+					} else {
+						addresses.editAddress(addresses.$state, props.index)
+					}
 				}
 			}
 		"

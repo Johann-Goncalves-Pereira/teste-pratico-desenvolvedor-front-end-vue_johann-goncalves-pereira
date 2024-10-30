@@ -4,8 +4,6 @@ import { useAddressesStore } from '@/stores/address'
 
 const addresses = useAddressesStore()
 const length = addresses.$state.length - 1
-
-console.log(addresses.$state[0])
 </script>
 
 <template>

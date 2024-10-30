@@ -24,10 +24,19 @@ addresses.$patch(
 
 const editIndex = ref(0)
 
-const handleOpenDialog = (address: AddressFieldsProps) => {
+const updateIndex = (address: AddressFieldsProps) => {
 	editIndex.value = addresses.$state.findIndex(
 		i => i.cep.value === address.cep.value,
 	)
+}
+
+const handleDeleteAddress = (address: AddressFieldsProps) => {
+	updateIndex(address)
+	addresses.deleteAddress(editIndex.value)
+}
+
+const handleOpenDialog = (address: AddressFieldsProps) => {
+	updateIndex(address)
 
 	const dialog = document.getElementById('dialog')
 
@@ -65,7 +74,7 @@ const handleCloseDialogOutOfBound = (
 			<li
 				class="addresses__address"
 				v-for="address in addresses.$state"
-				:key="address.cep.value"
+				:key="address.cep.value + addresses.$state.indexOf(address)"
 			>
 				<p>
 					CEP: <strong>{{ address.cep.formatted }}</strong>
@@ -87,6 +96,7 @@ const handleCloseDialogOutOfBound = (
 				</p>
 
 				<button @click="handleOpenDialog(address)">Edit</button>
+				<button @click="handleDeleteAddress(address)">Delete</button>
 			</li>
 		</ul>
 

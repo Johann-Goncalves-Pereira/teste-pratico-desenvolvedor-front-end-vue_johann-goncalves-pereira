@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@mdi/font':
+    specifier: ^7.4.47
+    version: 7.4.47
   lucide-vue-next:
     specifier: ^0.454.0
     version: 0.454.0(vue@3.5.12)
@@ -97,12 +100,18 @@ devDependencies:
   vite-plugin-vue-devtools:
     specifier: ^7.5.3
     version: 7.5.4(vite@5.4.10)(vue@3.5.12)
+  vite-plugin-vuetify:
+    specifier: ^2.0.4
+    version: 2.0.4(vite@5.4.10)(vue@3.5.12)(vuetify@3.7.3)
   vitest:
     specifier: ^2.1.3
     version: 2.1.4(@types/node@20.17.2)(jsdom@25.0.1)(sass@1.80.4)
   vue-tsc:
     specifier: ^2.1.6
     version: 2.1.8(typescript@5.6.3)
+  vuetify:
+    specifier: ^3.7.3
+    version: 3.7.3(typescript@5.6.3)(vite-plugin-vuetify@2.0.4)(vue@3.5.12)
 
 packages:
 
@@ -1255,6 +1264,10 @@ packages:
       '@jridgewell/sourcemap-codec': 1.5.0
     dev: true
 
+  /@mdi/font@7.4.47:
+    resolution: {integrity: sha512-43MtGpd585SNzHZPcYowu/84Vz2a2g31TvPMTm9uTiCSWzaheQySUcSyUH/46fPnuPQWof2yd0pGBtzee/IQWw==}
+    dev: false
+
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -2101,6 +2114,17 @@ packages:
 
   /@vue/tsconfig@0.5.1:
     resolution: {integrity: sha512-VcZK7MvpjuTPx2w6blwnwZAu5/LgBUtejFOi3pPGQFXQN5Ela03FUtd2Qtg4yWGGissVL0dr6Ro1LfOFh+PCuQ==}
+    dev: true
+
+  /@vuetify/loader-shared@2.0.3(vue@3.5.12)(vuetify@3.7.3):
+    resolution: {integrity: sha512-Ss3GC7eJYkp2SF6xVzsT7FAruEmdihmn4OCk2+UocREerlXKWgOKKzTN5PN3ZVN5q05jHHrsNhTuWbhN61Bpdg==}
+    peerDependencies:
+      vue: ^3.0.0
+      vuetify: ^3.0.0
+    dependencies:
+      upath: 2.0.1
+      vue: 3.5.12(typescript@5.6.3)
+      vuetify: 3.7.3(typescript@5.6.3)(vite-plugin-vuetify@2.0.4)(vue@3.5.12)
     dev: true
 
   /abbrev@2.0.0:
@@ -5254,6 +5278,11 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /upath@2.0.1:
+    resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
+    engines: {node: '>=4'}
+    dev: true
+
   /update-browserslist-db@1.1.1(browserslist@4.24.2):
     resolution: {integrity: sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==}
     hasBin: true
@@ -5386,6 +5415,24 @@ packages:
       kolorist: 1.8.0
       magic-string: 0.30.12
       vite: 5.4.10(@types/node@20.17.2)(sass@1.80.4)
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /vite-plugin-vuetify@2.0.4(vite@5.4.10)(vue@3.5.12)(vuetify@3.7.3):
+    resolution: {integrity: sha512-A4cliYUoP/u4AWSRVRvAPKgpgR987Pss7LpFa7s1GvOe8WjgDq92Rt3eVXrvgxGCWvZsPKziVqfHHdCMqeDhfw==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    peerDependencies:
+      vite: '>=5'
+      vue: ^3.0.0
+      vuetify: ^3.0.0
+    dependencies:
+      '@vuetify/loader-shared': 2.0.3(vue@3.5.12)(vuetify@3.7.3)
+      debug: 4.3.7(supports-color@8.1.1)
+      upath: 2.0.1
+      vite: 5.4.10(@types/node@20.17.2)(sass@1.80.4)
+      vue: 3.5.12(typescript@5.6.3)
+      vuetify: 3.7.3(typescript@5.6.3)(vite-plugin-vuetify@2.0.4)(vue@3.5.12)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5577,6 +5624,27 @@ packages:
       '@vue/server-renderer': 3.5.12(vue@3.5.12)
       '@vue/shared': 3.5.12
       typescript: 5.6.3
+
+  /vuetify@3.7.3(typescript@5.6.3)(vite-plugin-vuetify@2.0.4)(vue@3.5.12):
+    resolution: {integrity: sha512-bpuvBpZl1/+nLlXDgdVXekvMNR6W/ciaoa8CYlpeAzAARbY8zUFSoBq05JlLhkIHI58AnzKVy4c09d0OtfYAPg==}
+    engines: {node: ^12.20 || >=14.13}
+    peerDependencies:
+      typescript: '>=4.7'
+      vite-plugin-vuetify: '>=1.0.0'
+      vue: ^3.3.0
+      webpack-plugin-vuetify: '>=2.0.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      vite-plugin-vuetify:
+        optional: true
+      webpack-plugin-vuetify:
+        optional: true
+    dependencies:
+      typescript: 5.6.3
+      vite-plugin-vuetify: 2.0.4(vite@5.4.10)(vue@3.5.12)(vuetify@3.7.3)
+      vue: 3.5.12(typescript@5.6.3)
+    dev: true
 
   /w3c-xmlserializer@5.0.0:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
