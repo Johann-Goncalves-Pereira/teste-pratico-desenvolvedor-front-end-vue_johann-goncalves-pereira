@@ -15,8 +15,8 @@ addresses.$patch(
 	addresses.$state.filter(
 		address =>
 			address.cep.value !== '' &&
-			address.uf !== '' &&
-			address.localidade !== '',
+			address.uf.value !== '' &&
+			address.localidade.value !== '',
 	),
 )
 </script>
@@ -35,10 +35,10 @@ addresses.$patch(
 				:key="address.cep.value"
 			>
 				<p>
-					CEP: <strong>{{ address.cep.value }}</strong>
+					CEP: <strong>{{ address.cep.formatted }}</strong>
 				</p>
 				<p>
-					Logradouro: <strong>{{ address.logradouro }}</strong>
+					Logradouro: <strong>{{ address.logradouro.value }}</strong>
 				</p>
 				<p>
 					Complemento: <strong>{{ address.complemento }}</strong>
@@ -47,13 +47,10 @@ addresses.$patch(
 					Bairro: <strong>{{ address.bairro }}</strong>
 				</p>
 				<p>
-					Cidade: <strong>{{ address.localidade }}</strong>
+					Cidade: <strong>{{ address.localidade.value }}</strong>
 				</p>
 				<p>
-					UF: <strong>{{ address.uf }}</strong>
-				</p>
-				<p>
-					Estado: <strong>{{ address.estado }}</strong>
+					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
 			</li>
 		</ul>

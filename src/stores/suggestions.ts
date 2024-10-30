@@ -1,5 +1,6 @@
 import type { UFProps, CitiesProps } from '@/@types/field'
 import { defineStore } from 'pinia'
+import axios from 'axios'
 
 export const useStateSuggestions = defineStore('suggestions', {
 	state: () => ({
@@ -13,15 +14,7 @@ export const useStateSuggestions = defineStore('suggestions', {
 			}
 
 			try {
-				const response = await fetch(query)
-
-				if (!response.ok) {
-					throw new Error(
-						`Erro na busca dos dados: ${response.status} ${response.statusText}`,
-					)
-				}
-
-				const data = await response.json()
+				const { data } = await axios.get(query)
 
 				if (!data) {
 					throw new Error('No data was returned from the API')

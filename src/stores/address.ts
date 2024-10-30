@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import axios from 'axios'
 
 export type AddressFieldsProps = {
 	cep: {
@@ -66,21 +67,21 @@ export const useAddressStore = defineStore('address', {
 			if (this.cep.value.length !== 8) return
 
 			try {
-				const response = await fetch(
+				const { data } = await axios.get(
 					`https://viacep.com.br/ws/${this.cep.value}/json/`,
 				)
+				console.log(data)
 
-				if (!response.ok) {
+				if (!data) {
 					this.cep.valid = 'Erro na busca do banco de dados'
-					throw new Error(`Erro na busca do banco de dados: ${this.cep.value}`)
+					throw new Error('Erro na busca do banco de dados')
 				}
 
-				const { logradouro, complemento, bairro, localidade, uf, estado } =
-					(await response.json()) || {}
+				const { logradouro, bairro, localidade, uf, complemento, estado } = data
 
 				if (!logradouro || !localidade || !uf) {
 					this.cep.valid = 'CEP só deu um endereço vazio'
-					// throw new Error(`CEP só deu um endereço vazio: ${response}`)
+					throw new Error('CEP só deu um endereço vazio')
 				}
 
 				this.logradouro.value = logradouro || ''
@@ -90,7 +91,9 @@ export const useAddressStore = defineStore('address', {
 				this.uf.value = uf || ''
 				this.estado = estado || ''
 			} catch (err) {
-				this.cep.valid = `${err}`
+				if (err instanceof Error) {
+					this.cep.valid = err.message
+				}
 				throw err
 			}
 		},
@@ -126,7 +129,7 @@ export const useAddressesStore = defineStore('addresses', {
 		]
 	},
 	actions: {
-		addAddressStore(address: AddressFieldsProps | null) {
+		pushAddress(address: AddressFieldsProps | null) {
 			if (!address) return
 			if (address.cep?.value?.length !== 8) throw new Error('CEP inválido')
 			if (address.logradouro.valid?.length !== 0)

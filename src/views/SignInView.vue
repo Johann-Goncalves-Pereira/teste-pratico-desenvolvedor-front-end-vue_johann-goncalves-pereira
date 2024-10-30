@@ -8,32 +8,19 @@ import { useStateSuggestions } from '@/stores/suggestions'
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const address = useAddressStore()
-
-const hasAllRequiredFields = () => {
-	console.table([
-		address.cep.valid,
-		address.logradouro.valid,
-		address.localidade.valid,
-		address.uf.valid,
-	])
-
-	if (
-		address.cep.valid.length !== 0 &&
-		address.logradouro.valid.length !== 0 &&
-		// address.bairro.length !== 0 &&
-		address.localidade.valid.length !== 0 &&
-		address.uf.valid.length !== 0
-	)
-		return true
-
-	return false
-}
 </script>
 
 <template>
 	<main>
 		<h1>Preencha o seu endereço</h1>
-		<form class="form" @submit.prevent="addresses.addAddressStore(address)">
+		<form
+			class="form"
+			@submit.prevent="
+				() => {
+					addresses.pushAddress(address)
+				}
+			"
+		>
 			<fieldset class="form__wrapper">
 				<legend class="form__title">
 					{{ $t('sing_in.title') }}
@@ -201,7 +188,7 @@ const hasAllRequiredFields = () => {
 							$event => {
 								address.numero.value = $event.target?.value
 									.match(/^\d+$/, '')
-									.join('')
+									?.join('')
 							}
 						"
 					/>
