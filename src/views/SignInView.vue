@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import FormField from '@/components/SignIn/FormField/FormField.vue'
 import InputField from '@/components/SignIn/FormField/InputField.vue'
 
@@ -10,6 +8,26 @@ import { useStateSuggestions } from '@/stores/suggestions'
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const address = useAddressStore()
+
+const hasAllRequiredFields = () => {
+	console.table([
+		address.cep.valid,
+		address.logradouro.valid,
+		address.localidade.valid,
+		address.uf.valid,
+	])
+
+	if (
+		address.cep.valid.length !== 0 &&
+		address.logradouro.valid.length !== 0 &&
+		// address.bairro.length !== 0 &&
+		address.localidade.valid.length !== 0 &&
+		address.uf.valid.length !== 0
+	)
+		return true
+
+	return false
+}
 </script>
 
 <template>
@@ -20,20 +38,10 @@ const address = useAddressStore()
 				<legend class="form__title">
 					{{ $t('sing_in.title') }}
 					<p>
-						<span v-if="address.logradouro">
-							{{ address.logradouro.value }}
-						</span>
-						<span v-if="address.numero.valid.length !== 0">
-							- {{ address.numero.value }},
-						</span>
-						<span v-if="address.complemento">{{ address.complemento }}, </span>
-						<span v-if="address.bairro">, {{ address.bairro }}, </span>
-						<span v-if="address.localidade.valid.length !== 0"
-							>{{ address.localidade.value }} -
-						</span>
-						<span v-if="address.uf.valid.length !== 0"
-							>{{ address.uf.value }} / {{ address.estado }}</span
-						>
+						{{ address.logradouro.value }}
+						- {{ address.numero.value }}, {{ address.complemento }}
+						{{ address.bairro }}, {{ address.localidade.value }} -
+						{{ address.uf.value }} / {{ address.estado }}
 					</p>
 				</legend>
 
@@ -84,15 +92,17 @@ const address = useAddressStore()
 								const state = suggestions.states.find(
 									state => state.sigla === $event.target?.value,
 								)
-								if ($event.target?.value.length === 0) {
-									address.uf.valid = 'Erro: Campo UF está vazio'
-								}
+
 								if (state) {
 									address.uf.value = state?.sigla || ''
 									address.uf.valid = ''
 									address.estado = state?.nome || ''
 								} else {
 									address.uf.valid = 'Erro: Campo UF não existe'
+								}
+
+								if ($event.target?.value.length === 0) {
+									address.uf.valid = 'Erro: Campo UF está vazio'
 								}
 							}
 						"
@@ -121,14 +131,14 @@ const address = useAddressStore()
 						:id="$t('sing_in.form.localidade.id')"
 						:placeholder="$t('sing_in.form.localidade.placeholder')"
 						v-bind:value="address.localidade.value"
-						v-on:input="
-							$event => {
-								if ($event.target?.value.length === 0) {
+						v-on:input="address.localidade.valid = $event.target?.value"
+						v-on:blur="
+							() => {
+								if (address.localidade.valid.length === 0) {
 									address.localidade.valid =
 										'Erro: Cidade não pode ser um campo vazio'
 								} else {
 									address.localidade.valid = ''
-									address.localidade.valid = $event.target?.value
 								}
 							}
 						"
@@ -159,7 +169,11 @@ const address = useAddressStore()
 						v-on:input="
 							$event => {
 								address.logradouro = $event.target?.value
-								if ($event.target?.value.length === 0) {
+							}
+						"
+						v-on:blur="
+							() => {
+								if (address.logradouro.value.length === 0) {
 									address.logradouro.valid =
 										'Erro: Logradouro não pode ser um campo vazio'
 								} else {
@@ -174,7 +188,7 @@ const address = useAddressStore()
 					required
 					:id="$t('sing_in.form.numero.id')"
 					:label="$t('sing_in.form.numero.label')"
-					:erro="address.numero.valid"
+					:error="address.numero.valid"
 				>
 					<InputField
 						type="number"
@@ -185,15 +199,9 @@ const address = useAddressStore()
 						v-bind:value="address.numero"
 						v-on:input="
 							$event => {
-								address.numero = $event.target?.value
+								address.numero.value = $event.target?.value
 									.match(/^\d+$/, '')
 									.join('')
-
-								if ($event.target?.value.length === 0) {
-									address.numero.valid = 'Erro: Campo Número está vazio'
-								} else {
-									address.numero.valid = ''
-								}
 							}
 						"
 					/>

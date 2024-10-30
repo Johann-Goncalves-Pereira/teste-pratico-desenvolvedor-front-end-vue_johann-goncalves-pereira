@@ -13,7 +13,7 @@ export default {
 	<div class="field">
 		<label :for="id">{{ label }}<small v-if="required">*</small>:</label>
 		<slot />
-		<p class="error" v-if="error?.length !== 0">
+		<p class="error" v-if="error?.length !== 0 && error">
 			{{ error }}
 		</p>
 	</div>

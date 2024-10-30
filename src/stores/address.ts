@@ -83,11 +83,11 @@ export const useAddressStore = defineStore('address', {
 					// throw new Error(`CEP só deu um endereço vazio: ${response}`)
 				}
 
-				this.logradouro = logradouro || ''
+				this.logradouro.value = logradouro || ''
 				this.complemento = complemento || ''
 				this.bairro = bairro || ''
-				this.localidade = localidade || ''
-				this.uf = uf || ''
+				this.localidade.value = localidade || ''
+				this.uf.value = uf || ''
 				this.estado = estado || ''
 			} catch (err) {
 				this.cep.valid = `${err}`
