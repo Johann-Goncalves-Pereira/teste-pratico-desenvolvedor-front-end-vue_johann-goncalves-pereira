@@ -21,6 +21,7 @@ export interface UFProps {
 }
 
 export interface CitiesProps {
+  id: string
 	nome: string
 	microrregiao: {
 		id: number

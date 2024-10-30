@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import type { CitiesProps, UFProps } from '@/@types/field'
-
 import { ref } from 'vue'
 
 import FormField from '@/components/SignIn/FormField/FormField.vue'
 import InputField from '@/components/SignIn/FormField/InputField.vue'
-import { useAddressesStore, useAddressStore } from '@/stores/address'
 
-const states = ref<UFProps[]>([])
-const cities = ref<CitiesProps[]>([])
+import { useAddressesStore, useAddressStore } from '@/stores/address'
+import { useStateSuggestions } from '@/stores/suggestions'
+
 const error = ref<string | null>(null)
 
+const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const address = useAddressStore()
 
@@ -109,23 +108,20 @@ const fetchCity = async (uf: string | null) => {
 						:id="$t('sing_in.form.uf.id')"
 						:placeholder="$t('sing_in.form.uf.placeholder')"
 						v-bind:value="address.uf"
-						v-on:blur="
+						v-on:input="
 							$event => {
-								const selectedState = states.find(
+								const state = suggestions.states.find(
 									state => state.sigla === $event.target?.value,
 								)
-								if (selectedState) {
-									address.uf = selectedState.sigla
-								} else {
-									throw new Error(error?.valueOf())
-								}
+								address.uf = state?.sigla || ''
+								address.estado = state?.nome || ''
 							}
 						"
-						v-on:mouseover="fetchState()"
+						v-on:mouseover="suggestions.fetchStateSuggestions()"
 					/>
 					<datalist id="state-uf-list">
 						<option
-							v-for="state in states"
+							v-for="state in suggestions.states"
 							:key="state.sigla"
 							:value="`${state.sigla}`"
 						>
@@ -149,16 +145,19 @@ const fetchCity = async (uf: string | null) => {
 						:placeholder="$t('sing_in.form.localidade.placeholder')"
 						v-bind:value="address.localidade"
 						v-on:input="
-							address.localidade = cities.filter(
-								city => city.nome === $event.target?.value,
-							)[0].nome
+							address.localidade =
+								($event.target?.value &&
+									suggestions.cities.filter(
+										city => city.nome === $event.target?.value,
+									)[0]?.nome) ||
+								''
 						"
-						v-on:mouseover="fetchCity(address.uf)"
+						v-on:mouseover="suggestions.fetchCitySuggestions(address.uf)"
 					/>
 					<datalist id="city-list">
 						<option
-							v-for="city in cities"
-							:key="city.microrregiao.id"
+							v-for="city in suggestions.cities"
+							:key="city.id"
 							:value="city.nome"
 						>
 							{{ city.nome }}
