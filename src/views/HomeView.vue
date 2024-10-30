@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useAddressesStore } from '@/stores/address'
+import FormAddresses from '@/components/FormAddresses/FormAddresses.vue'
+import { useAddressesStore, type AddressFieldsProps } from '@/stores/address'
 import { HeartCrack } from 'lucide-vue-next'
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 const addresses = useAddressesStore()
@@ -19,6 +21,37 @@ addresses.$patch(
 			address.localidade.value !== '',
 	),
 )
+
+const editIndex = ref(0)
+
+const handleOpenDialog = (address: AddressFieldsProps) => {
+	editIndex.value = addresses.$state.findIndex(
+		i => i.cep.value === address.cep.value,
+	)
+
+	const dialog = document.getElementById('dialog')
+
+	if (dialog) (dialog as HTMLDialogElement).showModal()
+}
+
+const handleCloseDialogOutOfBound = (
+	event: MouseEvent,
+	element: HTMLDialogElement,
+) => {
+	if (element instanceof HTMLDialogElement) {
+		const dimensions = element.getBoundingClientRect()
+
+		if (
+			event.clientX < dimensions.left ||
+			event.clientX > dimensions.right ||
+			event.clientY < dimensions.top ||
+			event.clientY > dimensions.bottom
+		) {
+			element.close()
+			event.preventDefault()
+		}
+	}
+}
 </script>
 
 <template>
@@ -52,8 +85,20 @@ addresses.$patch(
 				<p>
 					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
+
+				<button @click="handleOpenDialog(address)">Edit</button>
 			</li>
 		</ul>
+
+		<dialog
+			id="dialog"
+			class="dialog"
+			@click="
+				handleCloseDialogOutOfBound($event, $event.target as HTMLDialogElement)
+			"
+		>
+			<FormAddresses method="dialog" :index="editIndex" />
+		</dialog>
 	</main>
 </template>
 

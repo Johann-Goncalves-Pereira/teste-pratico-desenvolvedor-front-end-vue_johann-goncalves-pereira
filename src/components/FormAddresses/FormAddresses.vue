@@ -15,7 +15,8 @@ const props = defineProps({
 
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
-const address = addresses.$state[props.index] || []
+
+console.log(props.index)
 </script>
 
 <template>
@@ -23,18 +24,24 @@ const address = addresses.$state[props.index] || []
 		class="form"
 		@submit.prevent="
 			() => {
-				addresses.pushAddress(addresses.$state, props.push, props.index)
+				if (props.index >= 0 && props.index < addresses.$state.length) {
+					addresses.pushAddress(addresses.$state, props.push, props.index)
+				}
 			}
 		"
 	>
 		<fieldset class="form__wrapper">
 			<legend class="form__title">
+				{{ props.push ? String(props.index) : '' }}
 				{{ $t('sing_in.title') }}
 				<p>
-					{{ address.logradouro.value }}
-					- {{ address.numero.value }}, {{ address.complemento }}
-					{{ address.bairro }}, {{ address.localidade.value }} -
-					{{ address.uf.value }} / {{ address.estado }}
+					{{ addresses[props.index].logradouro.value }}
+					- {{ addresses[props.index].numero.value }},
+					{{ addresses[props.index].complemento }}
+					{{ addresses[props.index].bairro }},
+					{{ addresses[props.index].localidade.value }} -
+					{{ addresses[props.index].uf.value }} /
+					{{ addresses[props.index].estado }}
 				</p>
 			</legend>
 
@@ -42,26 +49,28 @@ const address = addresses.$state[props.index] || []
 				required
 				:id="$t('sing_in.form.cep.id')"
 				:label="$t('sing_in.form.cep.label')"
-				:error="address.cep.valid"
+				:error="addresses[props.index].cep.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.cep.id')"
 					:placeholder="$t('sing_in.form.cep.placeholder')"
-					v-bind:value="address.cep.formatted"
+					v-bind:value="addresses[props.index].cep.formatted"
 					v-on:input="addresses.handleCEP($event.target?.value, props.index)"
 					v-on:blur="
 						() => {
 							addresses.fetchAddressByCep(props.index)
 
-							if (address.cep.value.length === 0) {
-								address.cep.valid = 'Erro: CEP não pode ser um campo vazio'
+							if (addresses[props.index].cep.value.length === 0) {
+								addresses[props.index].cep.valid =
+									'Erro: CEP não pode ser um campo vazio'
 							}
-							if (address.cep.value.length !== 9) {
-								address.cep.valid = 'Erro: CEP deve ter 8 digitos'
+							if (addresses[props.index].cep.value.length !== 9) {
+								addresses[props.index].cep.valid =
+									'Erro: CEP deve ter 8 digitos'
 							}
-							if (address.cep.value.length === 8) {
-								address.cep.valid = ''
+							if (addresses[props.index].cep.value.length === 8) {
+								addresses[props.index].cep.valid = ''
 							}
 						}
 					"
@@ -72,14 +81,14 @@ const address = addresses.$state[props.index] || []
 				required
 				:id="$t('sing_in.form.uf.id')"
 				:label="$t('sing_in.form.uf.label')"
-				:error="address.uf.valid"
+				:error="addresses[props.index].uf.valid"
 			>
 				<InputField
 					required
 					list="state-uf-list"
 					:id="$t('sing_in.form.uf.id')"
 					:placeholder="$t('sing_in.form.uf.placeholder')"
-					v-bind:value="address.uf.value"
+					v-bind:value="addresses[props.index].uf.value"
 					v-on:blur="
 						$event => {
 							const state = suggestions.states.find(
@@ -87,15 +96,15 @@ const address = addresses.$state[props.index] || []
 							)
 
 							if (state) {
-								address.uf.value = state?.sigla || ''
-								address.uf.valid = ''
-								address.estado = state?.nome || ''
+								addresses[props.index].uf.value = state?.sigla || ''
+								addresses[props.index].uf.valid = ''
+								addresses[props.index].estado = state?.nome || ''
 							} else {
-								address.uf.valid = 'Erro: Campo UF não existe'
+								addresses[props.index].uf.valid = 'Erro: Campo UF não existe'
 							}
 
 							if ($event.target?.value.length === 0) {
-								address.uf.valid = 'Erro: Campo UF está vazio'
+								addresses[props.index].uf.valid = 'Erro: Campo UF está vazio'
 							}
 						}
 					"
@@ -116,26 +125,30 @@ const address = addresses.$state[props.index] || []
 				required
 				:id="$t('sing_in.form.localidade.id')"
 				:label="$t('sing_in.form.localidade.label')"
-				:error="address.localidade.valid"
+				:error="addresses[props.index].localidade.valid"
 			>
 				<InputField
 					required
 					list="city-list"
 					:id="$t('sing_in.form.localidade.id')"
 					:placeholder="$t('sing_in.form.localidade.placeholder')"
-					v-bind:value="address.localidade.value"
-					v-on:input="address.localidade.valid = $event.target?.value"
+					v-bind:value="addresses[props.index].localidade.value"
+					v-on:input="
+						addresses[props.index].localidade.valid = $event.target?.value
+					"
 					v-on:blur="
 						() => {
-							if (address.localidade.valid.length === 0) {
-								address.localidade.valid =
+							if (addresses[props.index].localidade.valid.length === 0) {
+								addresses[props.index].localidade.valid =
 									'Erro: Cidade não pode ser um campo vazio'
 							} else {
-								address.localidade.valid = ''
+								addresses[props.index].localidade.valid = ''
 							}
 						}
 					"
-					v-on:mouseover="suggestions.fetchCitySuggestions(address.uf.value)"
+					v-on:mouseover="
+						suggestions.fetchCitySuggestions(addresses[props.index].uf.value)
+					"
 				/>
 				<datalist id="city-list">
 					<option
@@ -152,25 +165,25 @@ const address = addresses.$state[props.index] || []
 				required
 				:id="$t('sing_in.form.logradouro.id')"
 				:label="$t('sing_in.form.logradouro.label')"
-				:error="address.logradouro.valid"
+				:error="addresses[props.index].logradouro.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.logradouro.id')"
 					:placeholder="$t('sing_in.form.logradouro.placeholder')"
-					v-bind:value="address.logradouro.value"
+					v-bind:value="addresses[props.index].logradouro.value"
 					v-on:input="
 						$event => {
-							address.logradouro = $event.target?.value
+							addresses[props.index].logradouro = $event.target?.value
 						}
 					"
 					v-on:blur="
 						() => {
-							if (address.logradouro.value.length === 0) {
-								address.logradouro.valid =
+							if (addresses[props.index].logradouro.value.length === 0) {
+								addresses[props.index].logradouro.valid =
 									'Erro: Logradouro não pode ser um campo vazio'
 							} else {
-								address.logradouro.valid = ''
+								addresses[props.index].logradouro.valid = ''
 							}
 						}
 					"
@@ -181,7 +194,7 @@ const address = addresses.$state[props.index] || []
 				required
 				:id="$t('sing_in.form.numero.id')"
 				:label="$t('sing_in.form.numero.label')"
-				:error="address.numero.valid"
+				:error="addresses[props.index].numero.valid"
 			>
 				<InputField
 					type="number"
@@ -189,10 +202,10 @@ const address = addresses.$state[props.index] || []
 					required
 					:id="$t('sing_in.form.numero.id')"
 					:placeholder="$t('sing_in.form.numero.placeholder')"
-					v-bind:value="address.numero"
+					v-bind:value="addresses[props.index].numero"
 					v-on:input="
 						$event => {
-							address.numero.value = $event.target?.value
+							addresses[props.index].numero.value = $event.target?.value
 								.match(/^\d+$/, '')
 								?.join('')
 						}
@@ -207,8 +220,8 @@ const address = addresses.$state[props.index] || []
 				<InputField
 					:id="$t('sing_in.form.complemento.id')"
 					:placeholder="$t('sing_in.form.complemento.placeholder')"
-					v-bind:value="address.complemento"
-					v-on:input="address.complemento = $event.target?.value"
+					v-bind:value="addresses[props.index].complemento"
+					v-on:input="addresses[props.index].complemento = $event.target?.value"
 				/>
 			</FormField>
 
