@@ -7,26 +7,27 @@ header {
 	border-radius: 200vmax;
 	background-color: var(--color-background-soft);
 
-	padding: 0.75rem 1.25rem;
+	// padding: 0.75rem 1.25rem;
 	width: max-content;
 
 	.image {
 		position: absolute;
-		inset-inline: 0;
-		top: 100%;
-		margin-inline: auto;
+		inset-block: 0;
+		left: 100%;
+		margin-block: auto;
+		border-top-right-radius: inherit;
 		border-bottom-right-radius: inherit;
-		border-bottom-left-radius: inherit;
 		background-color: var(--color-background-soft);
 		padding: 0.5rem;
 		width: max-content;
+		height: max-content;
 
 		&::after,
 		&::before {
 			position: absolute;
-			top: 0;
-			border-top-right-radius: 100vmax;
+			left: 0;
 			border-top-left-radius: 100vmax;
+			border-bottom-left-radius: 100vmax;
 			background-color: var(--color-background);
 			width: 1.25rem;
 			height: 1.25rem;
@@ -34,13 +35,13 @@ header {
 		}
 
 		&::before {
-			left: 100%;
-			box-shadow: -6px -6px 0 0 var(--color-background-soft);
+			bottom: 100%;
+			box-shadow: -6px 6px 0 0 var(--color-background-soft);
 		}
 
 		&::after {
-			right: 100%;
-			box-shadow: 6px -6px 0 0 var(--color-background-soft);
+			top: 100%;
+			box-shadow: -6px -6px 0 0 var(--color-background-soft);
 		}
 
 		img {
@@ -50,19 +51,45 @@ header {
 	}
 
 	nav {
-		display: flex;
-		align-items: center;
+		display: grid;
+		place-items: center;
 		gap: 2rem;
 
-		div {
+		a {
+			padding-inline: 1rem;
+			padding-block: 2rem;
+		}
+
+		.border {
+			position: absolute;
+
+			transform: translate(-0.5px, 1px);
+
+			z-index: -10;
+			transition: transform 200ms ease-in-out;
+			inset: 0;
+			border-radius: 100vmax;
+			background-color: var(--color-brand);
+		}
+		.dot {
 			margin-top: 0.25rem;
 			border-radius: 200vmax;
 			background-color: var(--color-brand);
 			width: 0.25rem;
 			height: 0.25rem;
 		}
+
 		.router-link-active {
 			color: var(--color-brand);
+
+			~ .border {
+				transform: translate(-0.5px, -1px);
+			}
 		}
 	}
+}
+
+.ddd {
+	cursor: pointer;
+	background-color: rebeccapurple;
 }

@@ -1,0 +1,40 @@
+main {
+	display: grid;
+	gap: 5rem;
+	width: clamp(50.625rem, 48.6685rem + 9.7826vw, 56.25rem);
+	max-width: calc(100dvw - 10rem);
+
+	h1,
+	h2 {
+		text-align: center;
+	}
+
+	h1 {
+		font-size: 2rem;
+	}
+}
+
+.no-result {
+	display: grid;
+	place-items: center;
+
+	transition-duration: 200ms;
+	transition-property: border-color, color;
+	transition-timing-function: ease-in-out;
+	margin-bottom: 10rem;
+
+	border: 1px solid var(--color-border);
+	border-radius: 1rem;
+	padding: 3rem 1rem;
+
+	&:hover,
+	&:focus-visible {
+		border-color: var(--color-brand);
+		color: var(--color-brand);
+	}
+
+	svg {
+		width: 5rem;
+		height: 5rem;
+	}
+}

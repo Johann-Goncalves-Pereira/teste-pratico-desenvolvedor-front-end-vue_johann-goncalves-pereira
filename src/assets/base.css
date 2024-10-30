@@ -35,7 +35,8 @@
 
 	--section-gap: 160px;
 
-	--color-brand: #40b883;
+	--color-brand: oklch(70.2% 0.1328 160.6);
+	--color-negative: oklch(57.41% 0.1513 26.47);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -151,6 +152,14 @@ input[type='search']::-webkit-search-cancel-button,
 input[type='search']::-webkit-search-results-button,
 input[type='search']::-webkit-search-results-decoration {
 	display: none;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+input[type='number'] {
+	-moz-appearance: textfield;
 }
 
 @media (prefers-reduced-motion: no-preference) {

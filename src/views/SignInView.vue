@@ -1,111 +1,227 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import type { CitiesProps, UFProps } from '@/@types/field'
 
-type Address = {
-	cep: string
-	street: string
-	city: string
-	state: string
+import { ref } from 'vue'
+
+import FormField from '@/components/SignIn/FormField/FormField.vue'
+import InputField from '@/components/SignIn/FormField/InputField.vue'
+import { useAddressesStore, useAddressStore } from '@/stores/address'
+
+const states = ref<UFProps[]>([])
+const cities = ref<CitiesProps[]>([])
+const error = ref<string | null>(null)
+
+const addresses = useAddressesStore()
+const address = useAddressStore()
+
+const fetchState = async () => {
+	if (states.value.length !== 0) return
+
+	try {
+		const response = await fetch(
+			'https://servicodados.ibge.gov.br/api/v1/localidades/estados',
+		)
+		if (!response.ok) {
+			throw new Error('Erro ao buscar os estados')
+		}
+
+		const data = (await response.json()) as UFProps[]
+		states.value = data || []
+		cities.value = []
+	} catch (err) {
+		address.uf = 'Error: ao buscar os estados'
+		throw new Error(`Erro ao buscar os estados: ${err}`)
+	}
 }
 
-const { address, error } = reactive({
-	value: {
-		cep: '',
-		street: '',
-		city: '',
-		state: '',
-	},
-	message: '',
-})
+const fetchCity = async (uf: string | null) => {
+	if (!uf) return
 
-function useFetch(url: string) {
-	let err = null
-	const fetchData = () => {
-		fetch(url, {
-			headers: {
-				'X-Custom-Header': 'foobar',
-			},
-		})
-			.then(res => res.json())
-			.then(json => {
-				url = json
-			})
-			.catch(error => {
-				err = error
-				console.error('Fetch error:', err)
-			})
-	}
+	try {
+		const response = await fetch(
+			`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(
+				uf,
+			)}/municipios`,
+		)
 
-	// Trigger fetchData immediately on mount and on any change to urlRef
-	watch(() => url, fetchData, { immediate: true })
+		if (!response.ok) {
+			throw new Error(`Erro ao buscar as cidades: ${response.status}`)
+		}
 
-	const data = url
-	return { data, err }
-}
+		const data = (await response.json()) as CitiesProps[]
 
-function handleCep(cep: string) {
-	const validCep = /^[0-9]{8}$/
+		if (!data) {
+			throw new Error('Erro ao buscar as cidades: dados nulos')
+		}
 
-	if (!validCep.test(cep)) {
-		error.message = 'CEP inválido'
-	}
-
-	const url = `https://viacep.com.br/ws/${cep}/json/`
-	const { data, err } = useFetch(url) as { data: Address; err: null }
-
-	if (err) {
-		error.message = 'CEP inválido'
-	}
-
-	if (data) {
-		address.value.cep = data.cep
-		address.value.street = data.street
-		address.value.city = data.city
-		address.value.state = data.state
+		cities.value = data
+	} catch (err) {
+		address.localidade = 'Error: ao buscar as cidades'
+		throw new Error(`Erro ao buscar as cidades: ${err}`)
 	}
 }
 </script>
 
 <template>
 	<main>
-		<form
-			class="form"
-			action="input"
-			@input="
-				event => {
-					address.cep = (event.target as HTMLInputElement)?.value ?? ''
-					console.log(address.cep)
-				}
-			"
-			@blur="handleCep(address.cep)"
-		>
-			<div @click="handleCep(address.cep)">test</div>
+		<h1>Preencha o seu endereço</h1>
+		<form class="form" @submit.prevent="addresses.addAddressStore(address)">
 			<fieldset class="form__wrapper">
-				<legend class="form__title">Address</legend>
+				<legend class="form__title">
+					{{ $t('sing_in.title') }}
+					<p v-if="error">{{ error }}</p>
+					<p>
+						<span v-if="address.logradouro"> {{ address.logradouro }} </span>
+						<span v-if="address.numero"> - {{ address.numero }}, </span>
+						<span v-if="address.complemento">{{ address.complemento }}, </span>
+						<span v-if="address.bairro">, {{ address.bairro }}, </span>
+						<span v-if="address.localidade">{{ address.localidade }} - </span>
+						<span v-if="address.uf"
+							>{{ address.uf }} / {{ address.estado }}</span
+						>
+					</p>
+				</legend>
 
-				<div class="form__field">
-					<label>CEP:</label>
-					<input type="text" id="postal-code" name="postal-code" />
-				</div>
-				<div class="form__field">
-					<label>Endereço da rua:</label>
-					<input
-						type="text"
-						id="street-address"
-						name="street-address"
-						placeholder="R. das Mangueiras, 10"
+				<FormField
+					required
+					:id="$t('sing_in.form.cep.id')"
+					:label="$t('sing_in.form.cep.label')"
+				>
+					<InputField
+						required
+						:id="$t('sing_in.form.cep.id')"
+						:placeholder="$t('sing_in.form.cep.placeholder')"
+						v-bind:value="address.cep.formatted"
+						v-on:input="address.handleCEP($event.target?.value)"
+						v-on:blur="address.fetchAddressByCep()"
 					/>
-				</div>
-				<div class="form__field">
-					<label>Cidade:</label>
-					<input type="text" id="locality" name="locality" />
-				</div>
+					<p class="error" v-if="address.cep.valid">{{ address.cep.valid }}</p>
+				</FormField>
 
-				<div class="form__field">
-					<label>Estado/UF:</label>
-					<input type="text" id="state" name="state" list="state-list" />
-					<datalist id="state-list"> </datalist>
-				</div>
+				<FormField
+					required
+					:id="$t('sing_in.form.uf.id')"
+					:label="$t('sing_in.form.uf.label')"
+				>
+					<InputField
+						required
+						list="state-uf-list"
+						:id="$t('sing_in.form.uf.id')"
+						:placeholder="$t('sing_in.form.uf.placeholder')"
+						v-bind:value="address.uf"
+						v-on:blur="
+							$event => {
+								const selectedState = states.find(
+									state => state.sigla === $event.target?.value,
+								)
+								if (selectedState) {
+									address.uf = selectedState.sigla
+								} else {
+									throw new Error(error?.valueOf())
+								}
+							}
+						"
+						v-on:mouseover="fetchState()"
+					/>
+					<datalist id="state-uf-list">
+						<option
+							v-for="state in states"
+							:key="state.sigla"
+							:value="`${state.sigla}`"
+						>
+							{{ state.nome }}
+						</option>
+					</datalist>
+					<p class="error" v-if="address.uf.includes('Error')">
+						{{ address.uf }}
+					</p>
+				</FormField>
+
+				<FormField
+					required
+					:id="$t('sing_in.form.localidade.id')"
+					:label="$t('sing_in.form.localidade.label')"
+				>
+					<InputField
+						required
+						list="city-list"
+						:id="$t('sing_in.form.localidade.id')"
+						:placeholder="$t('sing_in.form.localidade.placeholder')"
+						v-bind:value="address.localidade"
+						v-on:input="
+							address.localidade = cities.filter(
+								city => city.nome === $event.target?.value,
+							)[0].nome
+						"
+						v-on:mouseover="fetchCity(address.uf)"
+					/>
+					<datalist id="city-list">
+						<option
+							v-for="city in cities"
+							:key="city.microrregiao.id"
+							:value="city.nome"
+						>
+							{{ city.nome }}
+						</option>
+					</datalist>
+					<p class="error" v-if="address.localidade.includes('Error')">
+						{{ address.localidade }}
+					</p>
+				</FormField>
+
+				<FormField
+					required
+					:id="$t('sing_in.form.logradouro.id')"
+					:label="$t('sing_in.form.logradouro.label')"
+				>
+					<InputField
+						required
+						:id="$t('sing_in.form.logradouro.id')"
+						:placeholder="$t('sing_in.form.logradouro.placeholder')"
+						v-bind:value="address.logradouro"
+						v-on:input="address.logradouro = $event.target?.value"
+					/>
+				</FormField>
+
+				<FormField
+					required
+					:id="$t('sing_in.form.numero.id')"
+					:label="$t('sing_in.form.numero.label')"
+				>
+					<InputField
+						type="number"
+						maxlength="6"
+						required
+						:id="$t('sing_in.form.numero.id')"
+						:placeholder="$t('sing_in.form.numero.placeholder')"
+						v-bind:value="address.numero"
+						v-on:input="
+							address.numero = $event.target?.value.match(/^\d+$/, '').join('')
+						"
+					/>
+				</FormField>
+
+				<FormField
+					:id="$t('sing_in.form.complemento.id')"
+					:label="$t('sing_in.form.complemento.label')"
+				>
+					<InputField
+						:id="$t('sing_in.form.complemento.id')"
+						:placeholder="$t('sing_in.form.complemento.placeholder')"
+						v-bind:value="address.complemento"
+						v-on:input="address.complemento = $event.target?.value"
+					/>
+				</FormField>
+
+				<label class="sr-only" :for="$t('sing_in.form.submit.id')"
+					>Avançar</label
+				>
+				<input
+					type="submit"
+					value="Avancar"
+					:id="$t('sing_in.form.submit.id')"
+					:name="$t('sing_in.form.submit.id')"
+				/>
 			</fieldset>
 		</form>
 	</main>

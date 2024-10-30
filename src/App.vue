@@ -1,15 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import router from './router'
-
-import { ref } from 'vue'
-
-const currentRoute = ref(router.currentRoute.value)
-
-router.beforeEach((to, _, next) => {
-	currentRoute.value = to
-	next()
-})
+import { House, MapPinned } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -25,25 +16,24 @@ router.beforeEach((to, _, next) => {
 		</div>
 
 		<nav>
-			<RouterLink to="/" :class="{ active: currentRoute.name === '/' }"
-				>Home</RouterLink
-			>
-			<div />
-			<RouterLink
-				to="/sign-in"
-				:class="{ active: currentRoute.name === '/sign-in' }"
-				>Sign In</RouterLink
-			>
+			<RouterLink to="/" aria-label="Home"><House /></RouterLink>
+			<div class="border" />
+			<div class="dot" />
+			<RouterLink to="/sign-in" aria-label="Sign In"><MapPinned /></RouterLink>
 		</nav>
 	</header>
 
 	<RouterView />
 </template>
 
-<style lang="scss" module>
+<style lang="scss">
 #app {
 	display: grid;
-	grid-template-rows: auto 1fr;
+	grid-template-columns: auto 1fr;
+	place-items: center;
+	gap: 2rem;
+	padding-inline: 1rem;
+	height: 100dvh;
 }
 </style>
 

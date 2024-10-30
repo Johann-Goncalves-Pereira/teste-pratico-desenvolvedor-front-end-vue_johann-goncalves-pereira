@@ -1,0 +1,16 @@
+.field {
+	display: grid;
+	grid-auto-rows: max-content;
+	gap: 0.5rem;
+	width: fit-content;
+
+	label {
+		font-size: 0.875rem;
+	}
+
+	small {
+		display: inline-block;
+		transform: translateY(-0.25rem);
+		font-size: 0.75rem;
+	}
+}
