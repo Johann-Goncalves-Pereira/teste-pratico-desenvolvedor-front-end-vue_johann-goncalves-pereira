@@ -9,6 +9,16 @@ const addresses = useAddressesStore()
 const hasAddress = !addresses.$state
 	.map(address => address.cep.value)
 	.find(address => address !== '')
+
+// addresses filter empty one
+addresses.$patch(
+	addresses.$state.filter(
+		address =>
+			address.cep.value !== '' &&
+			address.uf !== '' &&
+			address.localidade !== '',
+	),
+)
 </script>
 
 <template>
@@ -19,16 +29,32 @@ const hasAddress = !addresses.$state
 			<h2>{{ $t('home.h2') }}</h2>
 		</RouterLink>
 		<ul class="addresses" v-else>
-			<li v-for="address in addresses.$state" :key="address.cep.value">
-				<div v-if="address.cep.value.length !== 0">
-					<p>CEP: {{ address.cep.value }}</p>
-					<p>Logradouro: {{ address.logradouro }}</p>
-					<p>Complemento: {{ address.complemento }}</p>
-					<p>Bairro: {{ address.bairro }}</p>
-					<p>Cidade: {{ address.localidade }}</p>
-					<p>UF: {{ address.uf }}</p>
-					<p>Estado: {{ address.estado }}</p>
-				</div>
+			<li
+				class="addresses__address"
+				v-for="address in addresses.$state"
+				:key="address.cep.value"
+			>
+				<p>
+					CEP: <strong>{{ address.cep.value }}</strong>
+				</p>
+				<p>
+					Logradouro: <strong>{{ address.logradouro }}</strong>
+				</p>
+				<p>
+					Complemento: <strong>{{ address.complemento }}</strong>
+				</p>
+				<p>
+					Bairro: <strong>{{ address.bairro }}</strong>
+				</p>
+				<p>
+					Cidade: <strong>{{ address.localidade }}</strong>
+				</p>
+				<p>
+					UF: <strong>{{ address.uf }}</strong>
+				</p>
+				<p>
+					Estado: <strong>{{ address.estado }}</strong>
+				</p>
 			</li>
 		</ul>
 	</main>

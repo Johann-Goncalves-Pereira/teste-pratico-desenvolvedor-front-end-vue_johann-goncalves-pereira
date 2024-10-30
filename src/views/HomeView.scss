@@ -2,6 +2,7 @@ main {
 	display: grid;
 	gap: 5rem;
 	width: clamp(50.625rem, 48.6685rem + 9.7826vw, 56.25rem);
+	// width: clamp(36rem, 34.6087rem + 6.9565vw, 40rem);
 	max-width: calc(100dvw - 10rem);
 
 	h1,
@@ -36,5 +37,27 @@ main {
 	svg {
 		width: 5rem;
 		height: 5rem;
+	}
+}
+
+.addresses {
+	display: grid;
+	gap: 2rem;
+	width: 100%;
+
+	max-height: 75dvh;
+	overflow: auto;
+
+	&__address {
+		display: grid;
+
+		gap: 2rem;
+		border: 1px solid var(--color-border);
+		border-radius: 1rem;
+		padding: 2rem;
+
+		strong {
+			font-weight: 900;
+		}
 	}
 }
