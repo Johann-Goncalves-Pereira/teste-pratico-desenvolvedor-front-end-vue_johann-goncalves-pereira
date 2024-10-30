@@ -6,31 +6,51 @@ export type AddressFieldsProps = {
 		formatted: string
 		valid: string
 	}
-	logradouro: string
+	logradouro: {
+		value: string
+		valid: string
+	}
 	complemento: string
 	bairro: string
-	localidade: string
-	uf: string
+	localidade: {
+		value: string
+		valid: string
+	}
+	uf: {
+		value: string
+		valid: string
+	}
 	estado: string
-	numero: string
+	numero: {
+		value: string
+		valid: string
+	}
 }
 
 export const useAddressStore = defineStore('address', {
-  
-	state: () => {
+	state: (): AddressFieldsProps => {
 		return {
 			cep: {
 				value: '',
 				formatted: '',
 				valid: '',
 			},
-			logradouro: '',
+			logradouro: { value: '', valid: '' },
 			complemento: '',
 			bairro: '',
-			localidade: '',
-			uf: '',
+			localidade: {
+				value: '',
+				valid: '',
+			},
+			uf: {
+				value: '',
+				valid: '',
+			},
 			estado: '',
-			numero: '',
+			numero: {
+				value: '',
+				valid: '',
+			},
 		}
 	},
 	actions: {
@@ -78,7 +98,7 @@ export const useAddressStore = defineStore('address', {
 })
 
 export const useAddressesStore = defineStore('addresses', {
-	state: () => {
+	state: (): AddressFieldsProps[] => {
 		return [
 			{
 				cep: {
@@ -86,43 +106,33 @@ export const useAddressesStore = defineStore('addresses', {
 					formatted: '',
 					valid: '',
 				},
-				logradouro: '',
+				logradouro: { value: '', valid: '' },
 				complemento: '',
 				bairro: '',
-				localidade: '',
-				uf: '',
+				localidade: {
+					value: '',
+					valid: '',
+				},
+				uf: {
+					value: '',
+					valid: '',
+				},
 				estado: '',
-				numero: '',
+				numero: {
+					value: '',
+					valid: '',
+				},
 			},
 		]
 	},
 	actions: {
 		addAddressStore(address: AddressFieldsProps | null) {
 			if (!address) return
-
-			if (address.cep?.value?.length !== 8) {
-				console.log('CEP inválido')
-
-				return
-			}
-
-			if (address.logradouro?.length === 0) {
-				console.log('Logradouro inválido')
-
-				return
-			}
-
-			if (address.uf?.length === 0) {
-				console.log('UF inválido')
-
-				return
-			}
-
-			if (address.numero?.length === 0) {
-				console.log('Numero inválido')
-
-				return
-			}
+			if (address.cep?.value?.length !== 8) throw new Error('CEP inválido')
+			if (address.logradouro.valid?.length !== 0)
+				throw new Error('Logradouro inválido')
+			if (address.uf.valid?.length !== 0) throw new Error('UF inválido')
+			if (address.numero?.valid.length !== 0) throw new Error('Numero inválido')
 
 			this.$state.push(address)
 		},

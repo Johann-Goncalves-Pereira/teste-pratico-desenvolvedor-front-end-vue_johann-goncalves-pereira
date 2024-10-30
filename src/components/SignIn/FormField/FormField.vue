@@ -4,6 +4,7 @@ export default {
 		id: String,
 		label: String,
 		required: Boolean,
+		error: String,
 	},
 }
 </script>
@@ -12,6 +13,9 @@ export default {
 	<div class="field">
 		<label :for="id">{{ label }}<small v-if="required">*</small>:</label>
 		<slot />
+		<p class="error" v-if="error?.length !== 0">
+			{{ error }}
+		</p>
 	</div>
 </template>
 
