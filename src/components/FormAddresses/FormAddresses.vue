@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { useAddressesStore } from '@/stores/address'
 import { useStateSuggestions } from '@/stores/suggestions'
 import { defineProps } from 'vue'
 import FormField from '../SignIn/FormField/FormField.vue'
 import InputField from '../SignIn/FormField/InputField.vue'
+import {
+	useAddress,
+	useAddressesStore,
+	type AddressFieldsProps,
+} from '@/stores/address'
+import type { PropType } from 'vue'
 
 const props = defineProps({
-	index: {
-		type: Number,
+	address: {
+		type: Object as PropType<AddressFieldsProps>,
 		required: true,
 	},
 	push: Boolean,
@@ -15,6 +20,8 @@ const props = defineProps({
 
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
+const addrStore = useAddress()
+addrStore.set(props.address)
 </script>
 
 <template>
@@ -22,28 +29,28 @@ const addresses = useAddressesStore()
 		class="form"
 		@submit.prevent="
 			() => {
-				if (props.index >= 0 && props.index < addresses.$state.length) {
-					if (props.push) {
-						addresses.pushAddress(addresses.$state, props.index)
-					} else {
-						addresses.editAddress(addresses.$state, props.index)
-					}
+				if (props.push) {
+					console.log('pushed', addrStore.$state.data)
+					const addr = { ...addrStore.$state.data }
+					console.log('pushed', addr)
+					addresses.push(JSON.parse(JSON.stringify(addr)))
+					addrStore.reset()
+					console.log(addresses.$state)
 				}
 			}
 		"
 	>
 		<fieldset class="form__wrapper">
 			<legend class="form__title">
-				{{ props.push ? String(props.index) : '' }}
 				{{ $t('sing_in.title') }}
 				<p>
-					{{ addresses[props.index].logradouro.value }}
-					- {{ addresses[props.index].numero.value }},
-					{{ addresses[props.index].complemento }}
-					{{ addresses[props.index].bairro }},
-					{{ addresses[props.index].localidade.value }} -
-					{{ addresses[props.index].uf.value }} /
-					{{ addresses[props.index].estado }}
+					{{ addrStore.$state.data.logradouro.value }}
+					- {{ addrStore.$state.data.numero.value }},
+					{{ addrStore.$state.data.complemento }}
+					{{ addrStore.$state.data.bairro }},
+					{{ addrStore.$state.data.localidade.value }} -
+					{{ addrStore.$state.data.uf.value }} /
+					{{ addrStore.$state.data.estado }}
 				</p>
 			</legend>
 
@@ -51,28 +58,27 @@ const addresses = useAddressesStore()
 				required
 				:id="$t('sing_in.form.cep.id')"
 				:label="$t('sing_in.form.cep.label')"
-				:error="addresses[props.index].cep.valid"
+				:error="addrStore.$state.data.cep.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.cep.id')"
 					:placeholder="$t('sing_in.form.cep.placeholder')"
-					v-bind:value="addresses[props.index].cep.formatted"
-					v-on:input="addresses.handleCEP($event.target?.value, props.index)"
+					v-bind:value="addrStore.$state.data.cep.formatted"
+					v-on:input="addrStore.handleCEP($event.target?.value)"
 					v-on:blur="
 						() => {
-							addresses.fetchAddressByCep(props.index)
+							addrStore.fetchAddressByCep()
 
-							if (addresses[props.index].cep.value.length === 0) {
-								addresses[props.index].cep.valid =
+							if (addrStore.$state.data.cep.value.length === 0) {
+								addrStore.$state.data.cep.valid =
 									'Erro: CEP não pode ser um campo vazio'
 							}
-							if (addresses[props.index].cep.value.length !== 9) {
-								addresses[props.index].cep.valid =
-									'Erro: CEP deve ter 8 digitos'
+							if (addrStore.$state.data.cep.value.length !== 9) {
+								addrStore.$state.data.cep.valid = 'Erro: CEP deve ter 8 digitos'
 							}
-							if (addresses[props.index].cep.value.length === 8) {
-								addresses[props.index].cep.valid = ''
+							if (addrStore.$state.data.cep.value.length === 8) {
+								addrStore.$state.data.cep.valid = ''
 							}
 						}
 					"
@@ -83,14 +89,14 @@ const addresses = useAddressesStore()
 				required
 				:id="$t('sing_in.form.uf.id')"
 				:label="$t('sing_in.form.uf.label')"
-				:error="addresses[props.index].uf.valid"
+				:error="addrStore.$state.data.uf.valid"
 			>
 				<InputField
 					required
 					list="state-uf-list"
 					:id="$t('sing_in.form.uf.id')"
 					:placeholder="$t('sing_in.form.uf.placeholder')"
-					v-bind:value="addresses[props.index].uf.value"
+					v-bind:value="addrStore.$state.data.uf.value"
 					v-on:blur="
 						$event => {
 							const state = suggestions.states.find(
@@ -98,15 +104,15 @@ const addresses = useAddressesStore()
 							)
 
 							if (state) {
-								addresses[props.index].uf.value = state?.sigla || ''
-								addresses[props.index].uf.valid = ''
-								addresses[props.index].estado = state?.nome || ''
+								addrStore.$state.data.uf.value = state?.sigla || ''
+								addrStore.$state.data.uf.valid = ''
+								addrStore.$state.data.estado = state?.nome || ''
 							} else {
-								addresses[props.index].uf.valid = 'Erro: Campo UF não existe'
+								addrStore.$state.data.uf.valid = 'Erro: Campo UF não existe'
 							}
 
 							if ($event.target?.value.length === 0) {
-								addresses[props.index].uf.valid = 'Erro: Campo UF está vazio'
+								addrStore.$state.data.uf.valid = 'Erro: Campo UF está vazio'
 							}
 						}
 					"
@@ -127,29 +133,29 @@ const addresses = useAddressesStore()
 				required
 				:id="$t('sing_in.form.localidade.id')"
 				:label="$t('sing_in.form.localidade.label')"
-				:error="addresses[props.index].localidade.valid"
+				:error="addrStore.$state.data.localidade.valid"
 			>
 				<InputField
 					required
 					list="city-list"
 					:id="$t('sing_in.form.localidade.id')"
 					:placeholder="$t('sing_in.form.localidade.placeholder')"
-					v-bind:value="addresses[props.index].localidade.value"
+					v-bind:value="addrStore.$state.data.localidade.value"
 					v-on:input="
-						addresses[props.index].localidade.valid = $event.target?.value
+						addrStore.$state.data.localidade.valid = $event.target?.value
 					"
 					v-on:blur="
 						() => {
-							if (addresses[props.index].localidade.valid.length === 0) {
-								addresses[props.index].localidade.valid =
+							if (addrStore.$state.data.localidade.valid.length === 0) {
+								addrStore.$state.data.localidade.valid =
 									'Erro: Cidade não pode ser um campo vazio'
 							} else {
-								addresses[props.index].localidade.valid = ''
+								addrStore.$state.data.localidade.valid = ''
 							}
 						}
 					"
 					v-on:mouseover="
-						suggestions.fetchCitySuggestions(addresses[props.index].uf.value)
+						suggestions.fetchCitySuggestions(addrStore.$state.data.uf.value)
 					"
 				/>
 				<datalist id="city-list">
@@ -167,25 +173,25 @@ const addresses = useAddressesStore()
 				required
 				:id="$t('sing_in.form.logradouro.id')"
 				:label="$t('sing_in.form.logradouro.label')"
-				:error="addresses[props.index].logradouro.valid"
+				:error="addrStore.$state.data.logradouro.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.logradouro.id')"
 					:placeholder="$t('sing_in.form.logradouro.placeholder')"
-					v-bind:value="addresses[props.index].logradouro.value"
+					v-bind:value="addrStore.$state.data.logradouro.value"
 					v-on:input="
 						$event => {
-							addresses[props.index].logradouro = $event.target?.value
+							addrStore.$state.data.logradouro = $event.target?.value
 						}
 					"
 					v-on:blur="
 						() => {
-							if (addresses[props.index].logradouro.value.length === 0) {
-								addresses[props.index].logradouro.valid =
+							if (addrStore.$state.data.logradouro.value.length === 0) {
+								addrStore.$state.data.logradouro.valid =
 									'Erro: Logradouro não pode ser um campo vazio'
 							} else {
-								addresses[props.index].logradouro.valid = ''
+								addrStore.$state.data.logradouro.valid = ''
 							}
 						}
 					"
@@ -196,7 +202,7 @@ const addresses = useAddressesStore()
 				required
 				:id="$t('sing_in.form.numero.id')"
 				:label="$t('sing_in.form.numero.label')"
-				:error="addresses[props.index].numero.valid"
+				:error="addrStore.$state.data.numero.valid"
 			>
 				<InputField
 					type="number"
@@ -204,10 +210,10 @@ const addresses = useAddressesStore()
 					required
 					:id="$t('sing_in.form.numero.id')"
 					:placeholder="$t('sing_in.form.numero.placeholder')"
-					v-bind:value="addresses[props.index].numero"
+					v-bind:value="addrStore.$state.data.numero"
 					v-on:input="
 						$event => {
-							addresses[props.index].numero.value = $event.target?.value
+							addrStore.$state.data.numero.value = $event.target?.value
 								.match(/^\d+$/, '')
 								?.join('')
 						}
@@ -222,8 +228,8 @@ const addresses = useAddressesStore()
 				<InputField
 					:id="$t('sing_in.form.complemento.id')"
 					:placeholder="$t('sing_in.form.complemento.placeholder')"
-					v-bind:value="addresses[props.index].complemento"
-					v-on:input="addresses[props.index].complemento = $event.target?.value"
+					v-bind:value="addrStore.$state.data.complemento"
+					v-on:input="addrStore.$state.data.complemento = $event.target?.value"
 				/>
 			</FormField>
 

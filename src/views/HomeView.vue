@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FormAddresses from '@/components/FormAddresses/FormAddresses.vue'
-import { useAddressesStore, type AddressFieldsProps } from '@/stores/address'
+import { useAddressesStore } from '@/stores/address'
 import { HeartCrack } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -8,9 +8,7 @@ import { RouterLink } from 'vue-router'
 const addresses = useAddressesStore()
 
 // check if there is any address in the store
-const hasAddress = !addresses.$state
-	.map(address => address.cep.value)
-	.find(address => address !== '')
+const hasAddress = false //addresses.$state.length > 0
 
 // addresses filter empty one
 addresses.$patch(
@@ -24,19 +22,13 @@ addresses.$patch(
 
 const editIndex = ref(0)
 
-const updateIndex = (address: AddressFieldsProps) => {
-	editIndex.value = addresses.$state.findIndex(
-		i => i.cep.value === address.cep.value,
-	)
-}
-
-const handleDeleteAddress = (address: AddressFieldsProps) => {
-	updateIndex(address)
+const handleDeleteAddress = () => {
+	// updateIndex(address)
 	addresses.deleteAddress(editIndex.value)
 }
 
-const handleOpenDialog = (address: AddressFieldsProps) => {
-	updateIndex(address)
+const handleOpenDialog = () => {
+	// updateIndex(address)
 
 	const dialog = document.getElementById('dialog')
 
@@ -74,7 +66,7 @@ const handleCloseDialogOutOfBound = (
 			<li
 				class="addresses__address"
 				v-for="address in addresses.$state"
-				:key="address.cep.value + addresses.$state.indexOf(address)"
+				:key="address.cep.value"
 			>
 				<p>
 					CEP: <strong>{{ address.cep.formatted }}</strong>
@@ -95,8 +87,28 @@ const handleCloseDialogOutOfBound = (
 					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
 
-				<button @click="handleOpenDialog(address)">Edit</button>
-				<button @click="handleDeleteAddress(address)">Delete</button>
+				<button
+					@click="
+						() => {
+							handleOpenDialog()
+							editIndex = addresses.$state.findIndex(
+								ad => ad.cep.value === address.cep.value,
+							)
+							console.log(editIndex)
+						}
+					"
+				>
+					Edit
+				</button>
+				<button
+					@click="
+						() => {
+							handleDeleteAddress()
+						}
+					"
+				>
+					Delete
+				</button>
 			</li>
 		</ul>
 
@@ -107,7 +119,7 @@ const handleCloseDialogOutOfBound = (
 				handleCloseDialogOutOfBound($event, $event.target as HTMLDialogElement)
 			"
 		>
-			<FormAddresses method="dialog" :index="editIndex" />
+			<!-- <FormAddresses method="dialog" :address="addresses.$state[editIndex]" /> -->
 		</dialog>
 	</main>
 </template>

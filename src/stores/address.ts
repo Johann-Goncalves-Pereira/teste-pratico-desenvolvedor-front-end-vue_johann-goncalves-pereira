@@ -28,86 +28,97 @@ export type AddressFieldsProps = {
 	}
 }
 
-export const useAddressesStore = defineStore('addresses', {
-	state: (): AddressFieldsProps[] => {
-		return [
-			{
-				cep: {
-					value: '',
-					formatted: '',
-					valid: '',
-				},
-				logradouro: { value: '', valid: '' },
-				complemento: '',
-				bairro: '',
-				localidade: {
-					value: '',
-					valid: '',
-				},
-				uf: {
-					value: '',
-					valid: '',
-				},
-				estado: '',
-				numero: {
-					value: '',
-					valid: '',
-				},
-			},
-		]
+export const emptyAddress = (): AddressFieldsProps => ({
+	cep: {
+		value: '',
+		formatted: '',
+		valid: '',
 	},
-	actions: {
-		handleCEP(formatted: string, index: number) {
-			this[index].cep.formatted = formatted
-				.replace(/[^0-9]/g, '')
-				.slice(0, 8)
-				.replace(/(\d{5})(\d{3})/, '$1-$2')
+	logradouro: { value: '', valid: '' },
+	complemento: '',
+	bairro: '',
+	localidade: {
+		value: '',
+		valid: '',
+	},
+	uf: {
+		value: '',
+		valid: '',
+	},
+	estado: '',
+	numero: {
+		value: '',
+		valid: '',
+	},
+})
 
-			this[index].cep.value = this[index].cep.formatted.replace(/[^0-9]/g, '')
+export const useAddress = defineStore('address', {
+	state: () => ({
+		data: emptyAddress(),
+	}),
+	actions: {
+		reset() {
+			console.log('reset')
+			this.$patch({ data: emptyAddress() })
 		},
-		async fetchAddressByCep(index: number) {
-			if (this[index].cep.value.length !== 8) return
+		set(addr: AddressFieldsProps) {
+			console.log('set', addr)
+			this.$patch({ data: addr })
+		},
+		async fetchAddressByCep() {
+			if (this.$state.data.cep.value.length !== 8) return
 
 			try {
 				const { data } = await axios.get(
-					`https://viacep.com.br/ws/${this[index].cep.value}/json/`,
+					`https://viacep.com.br/ws/${this.$state.data.cep.value}/json/`,
 				)
 
 				if (!data) {
-					this[index].cep.valid = 'Erro na busca do banco de dados'
+					this.$state.data.cep.valid = 'Erro na busca do banco de dados'
 					throw new Error('Erro na busca do banco de dados')
 				}
 
 				const { logradouro, bairro, localidade, uf, complemento, estado } = data
 
 				if (!logradouro || !localidade || !uf) {
-					this[index].cep.valid = 'CEP só deu um endereço vazio'
+					this.$state.data.cep.valid = 'CEP só deu um endereço vazio'
 					throw new Error('CEP só deu um endereço vazio')
 				}
 
-				this[index].logradouro.value = logradouro || ''
-				this[index].complemento = complemento || ''
-				this[index].bairro = bairro || ''
-				this[index].localidade.value = localidade || ''
-				this[index].uf.value = uf || ''
-				this[index].estado = estado || ''
+				this.$state.data.logradouro.value = logradouro || ''
+				this.$state.data.complemento = complemento || ''
+				this.$state.data.bairro = bairro || ''
+				this.$state.data.localidade.value = localidade || ''
+				this.$state.data.uf.value = uf || ''
+				this.$state.data.estado = estado || ''
 			} catch (err) {
 				if (err instanceof Error) {
-					this[index].cep.valid = err.message
+					this.$state.data.cep.valid = err.message
 				}
 				throw err
 			}
 		},
-		checkAddress(address: AddressFieldsProps[], index: number) {
-			if (
-				address[index].cep?.value?.length !== 8 &&
-				address[index].logradouro.valid?.length !== 0 &&
-				address[index].uf.valid?.length !== 0 &&
-				address[index].numero?.valid.length !== 0
-			)
-				return true
+		handleCEP(formatted: string) {
+			this.$state.data.cep.formatted = formatted
+				.replace(/[^0-9]/g, '')
+				.slice(0, 8)
+				.replace(/(\d{5})(\d{3})/, '$1-$2')
 
-			return false
+			this.$state.data.cep.value = this.$state.data.cep.formatted.replace(
+				/[^0-9]/g,
+				'',
+			)
+		},
+	},
+})
+
+export const useAddressesStore = defineStore('addresses', {
+	state: (): AddressFieldsProps[] => [],
+	actions: {
+		push(address: AddressFieldsProps) {
+			this.$patch(state => {
+				state.push(address)
+			})
 		},
 		deleteAddress(index: number) {
 			console.log('remove', this.$state)
@@ -116,20 +127,8 @@ export const useAddressesStore = defineStore('addresses', {
 				state.splice(index, 1)
 			})
 		},
-		editAddress(addresses: AddressFieldsProps[], index: number) {
-			console.log('edit', this.$state)
-
-			if (this.checkAddress(addresses, index)) return
-			addresses[index] = addresses[index]
-		},
-		pushAddress(addresses: AddressFieldsProps[], index: number) {
-			console.log('push', this.$state)
-
-			if (this.checkAddress(addresses, index)) return
-
-			this.$patch(state => {
-				state.push(addresses[index])
-			})
+		editAddress(address: AddressFieldsProps, index: number) {
+			this.$state[index] = address
 		},
 	},
 })
