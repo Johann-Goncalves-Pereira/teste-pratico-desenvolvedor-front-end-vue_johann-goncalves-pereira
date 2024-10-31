@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-export type AddressFieldsProps = {
+export type AddressProps = {
 	cep: {
 		value: string
 		formatted: string
@@ -11,8 +11,6 @@ export type AddressFieldsProps = {
 		value: string
 		valid: string
 	}
-	complemento: string
-	bairro: string
 	localidade: {
 		value: string
 		valid: string
@@ -21,14 +19,16 @@ export type AddressFieldsProps = {
 		value: string
 		valid: string
 	}
-	estado: string
 	numero: {
 		value: string
 		valid: string
 	}
+	estado: string
+	bairro: string
+	complemento: string
 }
 
-export const emptyAddress = (): AddressFieldsProps => ({
+export const emptyAddress = (): AddressProps => ({
 	cep: {
 		value: '',
 		formatted: '',
@@ -52,7 +52,7 @@ export const emptyAddress = (): AddressFieldsProps => ({
 	},
 })
 
-export const useAddress = defineStore('address', {
+export const useAddressStore = defineStore('address', {
 	state: () => ({
 		data: emptyAddress(),
 	}),
@@ -60,10 +60,10 @@ export const useAddress = defineStore('address', {
 		reset() {
 			this.$patch({ data: emptyAddress() })
 		},
-		set(addr: AddressFieldsProps) {
+		set(addr: AddressProps) {
 			this.$patch({ data: addr })
 		},
-		async fetchAddressByCep() {
+		async fetchAddress() {
 			if (this.$state.data.cep.value.length !== 8) return
 
 			try {
@@ -76,19 +76,20 @@ export const useAddress = defineStore('address', {
 					throw new Error('Erro na busca do banco de dados')
 				}
 
-				const { logradouro, bairro, localidade, uf, complemento, estado } = data
+				const { logradouro, bairro, localidade, uf, complemento, estado } =
+					data ?? {}
 
 				if (!logradouro || !localidade || !uf) {
 					this.$state.data.cep.valid = 'CEP só deu um endereço vazio'
 					throw new Error('CEP só deu um endereço vazio')
 				}
 
-				this.$state.data.logradouro.value = logradouro || ''
-				this.$state.data.complemento = complemento || ''
-				this.$state.data.bairro = bairro || ''
-				this.$state.data.localidade.value = localidade || ''
-				this.$state.data.uf.value = uf || ''
-				this.$state.data.estado = estado || ''
+				this.$state.data.logradouro.value = logradouro ?? ''
+				this.$state.data.complemento = complemento ?? ''
+				this.$state.data.bairro = bairro ?? ''
+				this.$state.data.localidade.value = localidade ?? ''
+				this.$state.data.uf.value = uf ?? ''
+				this.$state.data.estado = estado ?? ''
 			} catch (err) {
 				if (err instanceof Error) {
 					this.$state.data.cep.valid = err.message
@@ -96,34 +97,51 @@ export const useAddress = defineStore('address', {
 				throw err
 			}
 		},
-		handleCEP(formatted: string) {
-			this.$state.data.cep.formatted = formatted
-				.replace(/[^0-9]/g, '')
-				.slice(0, 8)
-				.replace(/(\d{5})(\d{3})/, '$1-$2')
+		cepFormat(formatted: string | undefined | null) {
+			if (formatted === null || formatted === undefined) {
+				this.$state.data.cep.formatted = ''
+				this.$state.data.cep.value = ''
 
-			this.$state.data.cep.value = this.$state.data.cep.formatted.replace(
-				/[^0-9]/g,
-				'',
-			)
+				return
+			}
+
+			try {
+				const parsedFormatted = formatted
+					.replace(/[^0-9]/g, '')
+					.slice(0, 8)
+					.replace(/(\d{5})(\d{3})/, '$1-$2')
+
+				if (parsedFormatted.length !== 9) {
+					throw new Error('CEP must have 8 numbers')
+				}
+
+				this.$state.data.cep.formatted = parsedFormatted
+				this.$state.data.cep.value = parsedFormatted.replace(/[^0-9]/g, '')
+			} catch (err) {
+				if (err instanceof Error) {
+					this.$state.data.cep.valid = err.message
+				}
+
+				throw err
+			}
 		},
 	},
 })
 
 export const useAddressesStore = defineStore('addresses', {
-	state: (): AddressFieldsProps[] => [],
+	state: (): AddressProps[] => [],
 	actions: {
-		push(address: AddressFieldsProps) {
+		push(address: AddressProps) {
 			this.$patch(state => {
 				state.push(address)
 			})
 		},
-		deleteAddress(index: number) {
+		delete(index: number) {
 			this.$patch(state => {
 				state.splice(index, 1)
 			})
 		},
-		editAddress(address: AddressFieldsProps, index: number) {
+		edit(address: AddressProps, index: number) {
 			this.$state[index] = address
 		},
 	},

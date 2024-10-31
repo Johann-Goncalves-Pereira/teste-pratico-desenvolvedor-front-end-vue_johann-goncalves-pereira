@@ -2,26 +2,19 @@
 import FormAddresses from '@/components/FormAddresses/FormAddresses.vue'
 import { useAddressesStore } from '@/stores/address'
 import { HeartCrack } from 'lucide-vue-next'
-import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { ref } from 'vue'
 
 const addresses = useAddressesStore()
+const onendEdit = ref(0)
 
 // check if there is any address in the store
 const hasAddress = !addresses.$state.find(
 	address => address.cep.value !== '' && address.numero.value !== '',
 )
 
-const editIndex = ref(0)
-
-const handleDeleteAddress = () => {
-	addresses.deleteAddress(editIndex.value)
-}
-
-const handleOpenDialog = () => {
-	// updateIndex(address)
-
-	const dialog = document.getElementById('dialog')
+const handleOpenDialog = (id: string) => {
+	const dialog = document.getElementById(id)
 
 	if (dialog) (dialog as HTMLDialogElement).showModal()
 }
@@ -82,29 +75,61 @@ const handleCloseDialogOutOfBound = (
 					<button
 						@click="
 							() => {
-								handleOpenDialog()
-								editIndex = addresses.$state.findIndex(
+								onendEdit = addresses.$state.findIndex(
 									ad => ad.cep.value === address.cep.value,
+								)
+
+								handleOpenDialog(
+									`dialog-${address.cep.value}-${address.numero.value}`,
 								)
 							}
 						"
 					>
 						Edit
 					</button>
-					<button @click="handleDeleteAddress()">Delete</button>
+					<button
+						@click="
+							addresses.delete(
+								addresses.$state.findIndex(
+									ad => ad.cep.value === address.cep.value,
+								),
+							)
+						"
+					>
+						Delete
+					</button>
+					<p>
+						{{
+							addresses.$state.findIndex(
+								ad => ad.cep.value === address.cep.value,
+							)
+						}}
+					</p>
+
+					<dialog
+						class="dialog"
+						:id="`dialog-${address.cep.value}-${address.numero.value}`"
+						@click="
+							handleCloseDialogOutOfBound(
+								$event,
+								$event.target as HTMLDialogElement,
+							)
+						"
+					>
+						<FormAddresses
+							method="dialog"
+							:address="
+								addresses.$state[
+									addresses.$state.findIndex(
+										ad => ad.cep.value === address.cep.value,
+									)
+								]
+							"
+						/>
+					</dialog>
 				</div>
 			</li>
 		</ul>
-
-		<dialog
-			id="dialog"
-			class="dialog"
-			@click="
-				handleCloseDialogOutOfBound($event, $event.target as HTMLDialogElement)
-			"
-		>
-			<FormAddresses method="dialog" :address="addresses.$state[editIndex]" />
-		</dialog>
 	</main>
 </template>
 

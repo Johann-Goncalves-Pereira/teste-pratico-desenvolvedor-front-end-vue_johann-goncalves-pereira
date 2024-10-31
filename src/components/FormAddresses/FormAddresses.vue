@@ -5,21 +5,21 @@ import FormField from '../SignIn/FormField/FormField.vue'
 import InputField from '../SignIn/FormField/InputField.vue'
 import {
 	emptyAddress,
-	useAddress,
+	useAddressStore,
 	useAddressesStore,
-	type AddressFieldsProps,
+	type AddressProps,
 } from '@/stores/address'
 import type { PropType } from 'vue'
 
 const props = defineProps({
-	address: Object as PropType<AddressFieldsProps>,
+	address: Object as PropType<AddressProps>,
 	push: Boolean,
 })
 
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
-const addrStore = useAddress()
-addrStore.set(props.address || emptyAddress())
+const addr = useAddressStore()
+addr.set(props.address || emptyAddress())
 </script>
 
 <template>
@@ -28,10 +28,8 @@ addrStore.set(props.address || emptyAddress())
 		@submit.prevent="
 			() => {
 				if (props.push) {
-					addresses.push(
-						JSON.parse(JSON.stringify({ ...addrStore.$state.data })),
-					)
-					addrStore.reset()
+					addresses.push(JSON.parse(JSON.stringify({ ...addr.$state.data })))
+					addr.reset()
 				}
 			}
 		"
@@ -40,13 +38,13 @@ addrStore.set(props.address || emptyAddress())
 			<legend class="form__title">
 				{{ $t('sing_in.title') }}
 				<p>
-					{{ addrStore.$state.data.logradouro.value }}
-					- {{ addrStore.$state.data.numero.value }},
-					{{ addrStore.$state.data.complemento }}
-					{{ addrStore.$state.data.bairro }},
-					{{ addrStore.$state.data.localidade.value }} -
-					{{ addrStore.$state.data.uf.value }} /
-					{{ addrStore.$state.data.estado }}
+					{{ addr.$state.data.logradouro.value }}
+					- {{ addr.$state.data.numero.value }},
+					{{ addr.$state.data.complemento }}
+					{{ addr.$state.data.bairro }},
+					{{ addr.$state.data.localidade.value }} -
+					{{ addr.$state.data.uf.value }} /
+					{{ addr.$state.data.estado }}
 				</p>
 			</legend>
 
@@ -54,27 +52,27 @@ addrStore.set(props.address || emptyAddress())
 				required
 				:id="$t('sing_in.form.cep.id')"
 				:label="$t('sing_in.form.cep.label')"
-				:error="addrStore.$state.data.cep.valid"
+				:error="addr.$state.data.cep.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.cep.id')"
 					:placeholder="$t('sing_in.form.cep.placeholder')"
-					v-bind:value="addrStore.$state.data.cep.formatted"
-					v-on:input="addrStore.handleCEP($event.target?.value)"
+					v-bind:value="addr.$state.data.cep.formatted"
+					v-on:input="addr.cepFormat($event.target?.value)"
 					v-on:blur="
 						() => {
-							addrStore.fetchAddressByCep()
+							addr.fetchAddress()
 
-							if (addrStore.$state.data.cep.value.length === 0) {
-								addrStore.$state.data.cep.valid =
+							if (addr.$state.data.cep.value.length === 0) {
+								addr.$state.data.cep.valid =
 									'Erro: CEP não pode ser um campo vazio'
 							}
-							if (addrStore.$state.data.cep.value.length !== 9) {
-								addrStore.$state.data.cep.valid = 'Erro: CEP deve ter 8 digitos'
+							if (addr.$state.data.cep.value.length !== 9) {
+								addr.$state.data.cep.valid = 'Erro: CEP deve ter 8 digitos'
 							}
-							if (addrStore.$state.data.cep.value.length === 8) {
-								addrStore.$state.data.cep.valid = ''
+							if (addr.$state.data.cep.value.length === 8) {
+								addr.$state.data.cep.valid = ''
 							}
 						}
 					"
@@ -85,14 +83,14 @@ addrStore.set(props.address || emptyAddress())
 				required
 				:id="$t('sing_in.form.uf.id')"
 				:label="$t('sing_in.form.uf.label')"
-				:error="addrStore.$state.data.uf.valid"
+				:error="addr.$state.data.uf.valid"
 			>
 				<InputField
 					required
 					list="state-uf-list"
 					:id="$t('sing_in.form.uf.id')"
 					:placeholder="$t('sing_in.form.uf.placeholder')"
-					v-bind:value="addrStore.$state.data.uf.value"
+					v-bind:value="addr.$state.data.uf.value"
 					v-on:blur="
 						$event => {
 							const state = suggestions.states.find(
@@ -100,15 +98,15 @@ addrStore.set(props.address || emptyAddress())
 							)
 
 							if (state) {
-								addrStore.$state.data.uf.value = state?.sigla || ''
-								addrStore.$state.data.uf.valid = ''
-								addrStore.$state.data.estado = state?.nome || ''
+								addr.$state.data.uf.value = state?.sigla || ''
+								addr.$state.data.uf.valid = ''
+								addr.$state.data.estado = state?.nome || ''
 							} else {
-								addrStore.$state.data.uf.valid = 'Erro: Campo UF não existe'
+								addr.$state.data.uf.valid = 'Erro: Campo UF não existe'
 							}
 
 							if ($event.target?.value.length === 0) {
-								addrStore.$state.data.uf.valid = 'Erro: Campo UF está vazio'
+								addr.$state.data.uf.valid = 'Erro: Campo UF está vazio'
 							}
 						}
 					"
@@ -129,29 +127,27 @@ addrStore.set(props.address || emptyAddress())
 				required
 				:id="$t('sing_in.form.localidade.id')"
 				:label="$t('sing_in.form.localidade.label')"
-				:error="addrStore.$state.data.localidade.valid"
+				:error="addr.$state.data.localidade.valid"
 			>
 				<InputField
 					required
 					list="city-list"
 					:id="$t('sing_in.form.localidade.id')"
 					:placeholder="$t('sing_in.form.localidade.placeholder')"
-					v-bind:value="addrStore.$state.data.localidade.value"
-					v-on:input="
-						addrStore.$state.data.localidade.valid = $event.target?.value
-					"
+					v-bind:value="addr.$state.data.localidade.value"
+					v-on:input="addr.$state.data.localidade.valid = $event.target?.value"
 					v-on:blur="
 						() => {
-							if (addrStore.$state.data.localidade.valid.length === 0) {
-								addrStore.$state.data.localidade.valid =
+							if (addr.$state.data.localidade.valid.length === 0) {
+								addr.$state.data.localidade.valid =
 									'Erro: Cidade não pode ser um campo vazio'
 							} else {
-								addrStore.$state.data.localidade.valid = ''
+								addr.$state.data.localidade.valid = ''
 							}
 						}
 					"
 					v-on:mouseover="
-						suggestions.fetchCitySuggestions(addrStore.$state.data.uf.value)
+						suggestions.fetchCitySuggestions(addr.$state.data.uf.value)
 					"
 				/>
 				<datalist id="city-list">
@@ -169,25 +165,25 @@ addrStore.set(props.address || emptyAddress())
 				required
 				:id="$t('sing_in.form.logradouro.id')"
 				:label="$t('sing_in.form.logradouro.label')"
-				:error="addrStore.$state.data.logradouro.valid"
+				:error="addr.$state.data.logradouro.valid"
 			>
 				<InputField
 					required
 					:id="$t('sing_in.form.logradouro.id')"
 					:placeholder="$t('sing_in.form.logradouro.placeholder')"
-					v-bind:value="addrStore.$state.data.logradouro.value"
+					v-bind:value="addr.$state.data.logradouro.value"
 					v-on:input="
 						$event => {
-							addrStore.$state.data.logradouro = $event.target?.value
+							addr.$state.data.logradouro = $event.target?.value
 						}
 					"
 					v-on:blur="
 						() => {
-							if (addrStore.$state.data.logradouro.value.length === 0) {
-								addrStore.$state.data.logradouro.valid =
+							if (addr.$state.data.logradouro.value.length === 0) {
+								addr.$state.data.logradouro.valid =
 									'Erro: Logradouro não pode ser um campo vazio'
 							} else {
-								addrStore.$state.data.logradouro.valid = ''
+								addr.$state.data.logradouro.valid = ''
 							}
 						}
 					"
@@ -198,7 +194,7 @@ addrStore.set(props.address || emptyAddress())
 				required
 				:id="$t('sing_in.form.numero.id')"
 				:label="$t('sing_in.form.numero.label')"
-				:error="addrStore.$state.data.numero.valid"
+				:error="addr.$state.data.numero.valid"
 			>
 				<InputField
 					type="number"
@@ -206,10 +202,10 @@ addrStore.set(props.address || emptyAddress())
 					required
 					:id="$t('sing_in.form.numero.id')"
 					:placeholder="$t('sing_in.form.numero.placeholder')"
-					v-bind:value="addrStore.$state.data.numero"
+					v-bind:value="addr.$state.data.numero"
 					v-on:input="
 						$event => {
-							addrStore.$state.data.numero.value = $event.target?.value
+							addr.$state.data.numero.value = $event.target?.value
 								.match(/^\d+$/, '')
 								?.join('')
 						}
@@ -224,8 +220,8 @@ addrStore.set(props.address || emptyAddress())
 				<InputField
 					:id="$t('sing_in.form.complemento.id')"
 					:placeholder="$t('sing_in.form.complemento.placeholder')"
-					v-bind:value="addrStore.$state.data.complemento"
-					v-on:input="addrStore.$state.data.complemento = $event.target?.value"
+					v-bind:value="addr.$state.data.complemento"
+					v-on:input="addr.$state.data.complemento = $event.target?.value"
 				/>
 			</FormField>
 
