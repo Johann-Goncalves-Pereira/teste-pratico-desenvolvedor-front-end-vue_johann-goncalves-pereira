@@ -58,11 +58,9 @@ export const useAddress = defineStore('address', {
 	}),
 	actions: {
 		reset() {
-			console.log('reset')
 			this.$patch({ data: emptyAddress() })
 		},
 		set(addr: AddressFieldsProps) {
-			console.log('set', addr)
 			this.$patch({ data: addr })
 		},
 		async fetchAddressByCep() {
@@ -121,8 +119,6 @@ export const useAddressesStore = defineStore('addresses', {
 			})
 		},
 		deleteAddress(index: number) {
-			console.log('remove', this.$state)
-
 			this.$patch(state => {
 				state.splice(index, 1)
 			})

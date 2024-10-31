@@ -8,22 +8,13 @@ import { RouterLink } from 'vue-router'
 const addresses = useAddressesStore()
 
 // check if there is any address in the store
-const hasAddress = false //addresses.$state.length > 0
-
-// addresses filter empty one
-addresses.$patch(
-	addresses.$state.filter(
-		address =>
-			address.cep.value !== '' &&
-			address.uf.value !== '' &&
-			address.localidade.value !== '',
-	),
+const hasAddress = !addresses.$state.find(
+	address => address.cep.value !== '' && address.numero.value !== '',
 )
 
 const editIndex = ref(0)
 
 const handleDeleteAddress = () => {
-	// updateIndex(address)
 	addresses.deleteAddress(editIndex.value)
 }
 
@@ -87,28 +78,21 @@ const handleCloseDialogOutOfBound = (
 					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
 
-				<button
-					@click="
-						() => {
-							handleOpenDialog()
-							editIndex = addresses.$state.findIndex(
-								ad => ad.cep.value === address.cep.value,
-							)
-							console.log(editIndex)
-						}
-					"
-				>
-					Edit
-				</button>
-				<button
-					@click="
-						() => {
-							handleDeleteAddress()
-						}
-					"
-				>
-					Delete
-				</button>
+				<div class="buttons">
+					<button
+						@click="
+							() => {
+								handleOpenDialog()
+								editIndex = addresses.$state.findIndex(
+									ad => ad.cep.value === address.cep.value,
+								)
+							}
+						"
+					>
+						Edit
+					</button>
+					<button @click="handleDeleteAddress()">Delete</button>
+				</div>
 			</li>
 		</ul>
 
@@ -119,7 +103,7 @@ const handleCloseDialogOutOfBound = (
 				handleCloseDialogOutOfBound($event, $event.target as HTMLDialogElement)
 			"
 		>
-			<!-- <FormAddresses method="dialog" :address="addresses.$state[editIndex]" /> -->
+			<FormAddresses method="dialog" :address="addresses.$state[editIndex]" />
 		</dialog>
 	</main>
 </template>

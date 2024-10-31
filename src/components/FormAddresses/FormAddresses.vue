@@ -4,6 +4,7 @@ import { defineProps } from 'vue'
 import FormField from '../SignIn/FormField/FormField.vue'
 import InputField from '../SignIn/FormField/InputField.vue'
 import {
+	emptyAddress,
 	useAddress,
 	useAddressesStore,
 	type AddressFieldsProps,
@@ -11,17 +12,14 @@ import {
 import type { PropType } from 'vue'
 
 const props = defineProps({
-	address: {
-		type: Object as PropType<AddressFieldsProps>,
-		required: true,
-	},
+	address: Object as PropType<AddressFieldsProps>,
 	push: Boolean,
 })
 
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const addrStore = useAddress()
-addrStore.set(props.address)
+addrStore.set(props.address || emptyAddress())
 </script>
 
 <template>
@@ -30,12 +28,10 @@ addrStore.set(props.address)
 		@submit.prevent="
 			() => {
 				if (props.push) {
-					console.log('pushed', addrStore.$state.data)
-					const addr = { ...addrStore.$state.data }
-					console.log('pushed', addr)
-					addresses.push(JSON.parse(JSON.stringify(addr)))
+					addresses.push(
+						JSON.parse(JSON.stringify({ ...addrStore.$state.data })),
+					)
 					addrStore.reset()
-					console.log(addresses.$state)
 				}
 			}
 		"
