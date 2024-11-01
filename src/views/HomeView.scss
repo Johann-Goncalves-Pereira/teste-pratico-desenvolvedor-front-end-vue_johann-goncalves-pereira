@@ -15,17 +15,6 @@ main {
 	}
 }
 
-dialog[open] {
-	margin: auto;
-	border: 1px solid var(--color-border);
-	border-radius: 1rem;
-	padding: 3rem 4rem;
-
-	&::backdrop {
-		backdrop-filter: blur(0.5rem);
-	}
-}
-
 .no-result {
 	display: grid;
 	place-items: center;

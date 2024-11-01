@@ -17,7 +17,6 @@ const props = defineProps({
 	onClose: Function,
 })
 
-console.log('index', props.index)
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const addr = useAddressStore()
