@@ -7,6 +7,15 @@ export const i18n = createI18n({
 			home: {
 				h1: 'Preencha o seu endereço',
 				h2: 'Nenhum endereço encontrado',
+        list: {
+          cep: 'CEP:',
+          numero: 'Numero da casa:',
+          logradouro: 'Logradouro:',
+          complemento: 'Complemento:',
+          uf: 'UF:',
+          bairro: 'Bairro:',
+          localidade: 'Cidade:',
+        }
 			},
 			sing_in: {
 				title: 'Endereço: ',

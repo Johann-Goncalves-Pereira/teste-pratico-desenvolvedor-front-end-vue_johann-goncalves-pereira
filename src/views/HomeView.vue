@@ -9,10 +9,15 @@ import DialogModal from '@/components/DialogModal/DialogModal.vue'
 const addresses = useAddressesStore()
 const dialogID = 'dialog'
 const editAddress = ref(-1)
+const isEmpty = ref(false)
 
-const isEmpty = !addresses.$state.find(
-	address => address.cep.value !== '' && address.numero.value !== '',
-)
+console.log(!addresses.$state.length)
+
+const checkEmpty = () => {
+	isEmpty.value = !addresses.$state.find(
+		address => address.cep.value !== '' && address.numero.value !== '',
+	)
+}
 
 const handleGetIndex = (address: AddressProps) => {
 	return addresses.$state.findIndex(ad => ad.cep.value === address.cep.value)
@@ -26,6 +31,13 @@ const handleCloseDialog = () => {
 	const dialog = document.getElementById('dialog')
 	if (dialog) (dialog as HTMLDialogElement).close()
 }
+
+const deleteAddress = (address: AddressProps) => {
+	addresses.delete(handleGetIndex(address))
+	checkEmpty()
+}
+
+checkEmpty()
 </script>
 
 <template>
@@ -42,32 +54,33 @@ const handleCloseDialog = () => {
 				:key="address.cep.value"
 			>
 				<p>
-					CEP: <strong>{{ address.cep.formatted }}</strong>
+					{{ $t('home.list.cep') }} <strong>{{ address.cep.formatted }}</strong>
 				</p>
 				<p>
-					Numero: <strong>{{ address.numero.value }}</strong>
+					{{ $t('home.list.uf') }}
+					<strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
 				<p>
-					Logradouro: <strong>{{ address.logradouro.value }}</strong>
+					{{ $t('home.list.localidade') }}
+					<strong>{{ address.localidade.value }}</strong>
 				</p>
 				<p>
-					Complemento: <strong>{{ address.complemento }}</strong>
+					{{ $t('home.list.logradouro') }}
+					<strong>{{ address.logradouro.value }} - {{ address.bairro }}</strong>
 				</p>
+
 				<p>
-					Bairro: <strong>{{ address.bairro }}</strong>
+					{{ $t('home.list.numero') }}
+					<strong>{{ address.numero.value }}</strong>
 				</p>
-				<p>
-					Cidade: <strong>{{ address.localidade.value }}</strong>
-				</p>
-				<p>
-					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
+				<p v-if="address.complemento">
+					{{ $t('home.list.complemento') }}
+					<strong>{{ address.complemento }}</strong>
 				</p>
 
 				<div class="buttons">
 					<button @click="handleOpenDialog(dialogID, address)">Edit</button>
-					<button @click="addresses.delete(handleGetIndex(address))">
-						Delete
-					</button>
+					<button @click="deleteAddress(address)">Delete</button>
 					<p>
 						{{ handleGetIndex(address) + 1 }}
 					</p>
