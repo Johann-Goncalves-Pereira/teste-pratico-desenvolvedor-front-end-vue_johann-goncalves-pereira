@@ -30,11 +30,9 @@ addr.set(props.address || emptyAddress())
 		@submit.prevent="
 			() => {
 				if (props.index !== undefined) {
-					console.log('edit')
 					addresses.edit(addr.$state.data, props.index)
 					if (props.onClose) props.onClose()
 				} else {
-					console.log('create')
 					addresses.push(addr.$state.data)
 					addr.reset()
 				}

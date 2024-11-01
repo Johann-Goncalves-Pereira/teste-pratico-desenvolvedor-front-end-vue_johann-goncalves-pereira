@@ -118,14 +118,6 @@ export const useAddressesStore = defineStore('addresses', {
 	state: (): AddressProps[] => [],
 	actions: {
 		push(address: AddressProps) {
-			if (
-				!this.$state.some(addr => addr.cep === address.cep) &&
-				!this.$state.some(addr => addr.numero === address.numero) &&
-				!this.$state.some(addr => addr.complemento === address.complemento)
-			) {
-				return
-			}
-
 			this.$patch(state => {
 				state.push(cloneAddress(address))
 			})
