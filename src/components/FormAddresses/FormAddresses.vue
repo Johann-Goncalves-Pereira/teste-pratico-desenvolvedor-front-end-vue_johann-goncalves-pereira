@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useStateSuggestions } from '@/stores/suggestions'
 import { defineProps } from 'vue'
-import FormField from '../SignIn/FormField/FormField.vue'
-import InputField from '../SignIn/FormField/InputField.vue'
+import FormField from '../FormAddresses/ItemField/ItemField.vue'
+import InputField from '../FormAddresses/InputField/InputField.vue'
 import {
 	emptyAddress,
 	useAddressStore,
@@ -63,6 +63,7 @@ addr.set(props.address || emptyAddress())
 					required
 					:id="$t('sing_in.form.cep.id')"
 					:placeholder="$t('sing_in.form.cep.placeholder')"
+					v-bind:value="addr.$state.data.cep.formatted"
 					v-on:input="
 						$event => {
 							addr.cepFormat($event.target?.value)

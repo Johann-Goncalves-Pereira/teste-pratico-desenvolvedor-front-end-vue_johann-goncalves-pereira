@@ -20,5 +20,5 @@ export default {
 </template>
 
 <style lang="scss" scoped>
-@use './FormField.scss';
+@use './ItemField.scss';
 </style>
