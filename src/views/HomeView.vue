@@ -63,6 +63,9 @@ const handleCloseDialog = () => {
 					CEP: <strong>{{ address.cep.formatted }}</strong>
 				</p>
 				<p>
+					Numero: <strong>{{ address.numero.value }}</strong>
+				</p>
+				<p>
 					Logradouro: <strong>{{ address.logradouro.value }}</strong>
 				</p>
 				<p>
@@ -76,9 +79,6 @@ const handleCloseDialog = () => {
 				</p>
 				<p>
 					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
-				</p>
-				<p>
-					Numero: <strong>{{ address.numero.value }}</strong>
 				</p>
 
 				<div class="buttons">

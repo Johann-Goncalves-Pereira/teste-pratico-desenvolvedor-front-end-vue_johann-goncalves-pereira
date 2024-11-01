@@ -65,12 +65,27 @@ addr.set(props.address || emptyAddress())
 					required
 					:id="$t('sing_in.form.cep.id')"
 					:placeholder="$t('sing_in.form.cep.placeholder')"
-					v-bind:value="addr.$state.data.cep.formatted"
-					v-on:input="addr.cepFormat($event.target?.value)"
+					v-on:input="
+						$event => {
+							addr.cepFormat($event.target?.value)
+							$event.target.value = addr.$state.data.cep.formatted
+							if (addr.$state.data.cep.value.length === 8) {
+								addr.fetchAddress()
+							} else {
+								addr.$state.data.estado = ''
+								addr.$state.data.localidade.value = ''
+								addr.$state.data.cep.valid = ''
+								addr.$state.data.cep.formatted = ''
+								addr.$state.data.cep.value = ''
+								addr.$state.data.logradouro.value = ''
+								addr.$state.data.complemento = ''
+								addr.$state.data.bairro = ''
+								addr.$state.data.uf.value = ''
+							}
+						}
+					"
 					v-on:blur="
 						() => {
-							addr.fetchAddress()
-
 							if (addr.$state.data.cep.value.length === 0) {
 								addr.$state.data.cep.valid =
 									'Erro: CEP não pode ser um campo vazio'
@@ -108,6 +123,8 @@ addr.set(props.address || emptyAddress())
 								addr.$state.data.uf.value = state?.sigla || ''
 								addr.$state.data.uf.valid = ''
 								addr.$state.data.estado = state?.nome || ''
+
+								$event.target.value = addr.$state.data.uf.value
 							} else {
 								addr.$state.data.uf.valid = 'Erro: Campo UF não existe'
 							}
@@ -182,6 +199,7 @@ addr.set(props.address || emptyAddress())
 					v-on:input="
 						$event => {
 							addr.$state.data.logradouro = $event.target?.value
+							$event.target.value = addr.$state.data.logradouro.value
 						}
 					"
 					v-on:blur="
@@ -215,6 +233,8 @@ addr.set(props.address || emptyAddress())
 							addr.$state.data.numero.value = $event.target?.value
 								.match(/^\d+$/, '')
 								?.join('')
+
+							$event.target.value = addr.$state.data.numero.value
 						}
 					"
 				/>
@@ -228,7 +248,12 @@ addr.set(props.address || emptyAddress())
 					:id="$t('sing_in.form.complemento.id')"
 					:placeholder="$t('sing_in.form.complemento.placeholder')"
 					v-bind:value="addr.$state.data.complemento"
-					v-on:input="addr.$state.data.complemento = $event.target?.value"
+					v-on:input="
+						$event => {
+							addr.$state.data.complemento = $event.target?.value
+							$event.target.value = addr.$state.data.complemento
+						}
+					"
 				/>
 			</FormField>
 

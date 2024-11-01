@@ -83,8 +83,8 @@ export const useAddressStore = defineStore('address', {
 				const { logradouro, bairro, localidade, uf, complemento, estado } = data
 
 				if (!logradouro || !localidade || !uf) {
-					this.$state.data.cep.valid = 'CEP só deu um endereço vazio'
-					throw new Error('CEP só deu um endereço vazio')
+					this.$state.data.cep.valid = 'CEP não encontrado'
+					throw new Error('CEP não encontrado')
 				}
 
 				this.$state.data.logradouro.value = logradouro || ''
@@ -118,6 +118,14 @@ export const useAddressesStore = defineStore('addresses', {
 	state: (): AddressProps[] => [],
 	actions: {
 		push(address: AddressProps) {
+			if (
+				!this.$state.some(addr => addr.cep === address.cep) &&
+				!this.$state.some(addr => addr.numero === address.numero) &&
+				!this.$state.some(addr => addr.complemento === address.complemento)
+			) {
+				return
+			}
+
 			this.$patch(state => {
 				state.push(cloneAddress(address))
 			})
