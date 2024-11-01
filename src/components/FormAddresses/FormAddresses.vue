@@ -73,11 +73,7 @@ addr.set(props.address || emptyAddress())
 							} else {
 								addr.$state.data.estado = ''
 								addr.$state.data.localidade.value = ''
-								addr.$state.data.cep.valid = ''
-								addr.$state.data.cep.formatted = ''
-								addr.$state.data.cep.value = ''
 								addr.$state.data.logradouro.value = ''
-								addr.$state.data.complemento = ''
 								addr.$state.data.bairro = ''
 								addr.$state.data.uf.value = ''
 							}
