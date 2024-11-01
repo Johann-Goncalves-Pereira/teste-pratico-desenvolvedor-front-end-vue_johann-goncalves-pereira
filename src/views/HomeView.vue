@@ -6,12 +6,13 @@ import { RouterLink } from 'vue-router'
 import { ref } from 'vue'
 
 const addresses = useAddressesStore()
-const onendEdit = ref(0)
+const editAddress = ref(-1)
 
 // check if there is any address in the store
-const hasAddress = !addresses.$state.find(
-	address => address.cep.value !== '' && address.numero.value !== '',
-)
+const isEmpty = false
+// !addresses.$state.find(
+// 	address => address.cep.value !== '' && address.numero.value !== '',
+// )
 
 const handleOpenDialog = (id: string) => {
 	const dialog = document.getElementById(id)
@@ -33,16 +34,22 @@ const handleCloseDialogOutOfBound = (
 			event.clientY > dimensions.bottom
 		) {
 			element.close()
+			editAddress.value = -1
 			event.preventDefault()
 		}
 	}
+}
+
+const handleCloseDialog = () => {
+	const dialog = document.getElementById('dialog')
+	if (dialog) (dialog as HTMLDialogElement).close()
 }
 </script>
 
 <template>
 	<main>
 		<h1>{{ $t('home.h1') }}</h1>
-		<RouterLink to="/sign-in" class="no-result" v-if="hasAddress">
+		<RouterLink to="/sign-in" class="no-result" v-if="isEmpty">
 			<HeartCrack />
 			<h2>{{ $t('home.h2') }}</h2>
 		</RouterLink>
@@ -70,18 +77,19 @@ const handleCloseDialogOutOfBound = (
 				<p>
 					UF: <strong>{{ address.uf.value }}/{{ address.estado }}</strong>
 				</p>
+				<p>
+					Numero: <strong>{{ address.numero.value }}</strong>
+				</p>
 
 				<div class="buttons">
 					<button
 						@click="
 							() => {
-								onendEdit = addresses.$state.findIndex(
+								editAddress = addresses.$state.findIndex(
 									ad => ad.cep.value === address.cep.value,
 								)
 
-								handleOpenDialog(
-									`dialog-${address.cep.value}-${address.numero.value}`,
-								)
+								handleOpenDialog(`dialog`)
 							}
 						"
 					>
@@ -105,32 +113,28 @@ const handleCloseDialogOutOfBound = (
 							)
 						}}
 					</p>
-
-					<dialog
-						class="dialog"
-						:id="`dialog-${address.cep.value}-${address.numero.value}`"
-						@click="
-							handleCloseDialogOutOfBound(
-								$event,
-								$event.target as HTMLDialogElement,
-							)
-						"
-					>
-						<FormAddresses
-							method="dialog"
-							:address="
-								addresses.$state[
-									addresses.$state.findIndex(
-										ad => ad.cep.value === address.cep.value,
-									)
-								]
-							"
-						/>
-					</dialog>
 				</div>
 			</li>
 		</ul>
 	</main>
+
+	<dialog
+		class="dialog"
+		id="dialog"
+		@click="
+			$event => {
+				handleCloseDialogOutOfBound($event, $event.target as HTMLDialogElement)
+			}
+		"
+	>
+		<FormAddresses
+			v-if="editAddress !== -1"
+			method="dialog"
+			:address="addresses.$state[editAddress]"
+			:index="editAddress"
+			@close="() => handleCloseDialog()"
+		/>
+	</dialog>
 </template>
 
 <style lang="scss" scoped>

@@ -12,10 +12,12 @@ import {
 import type { PropType } from 'vue'
 
 const props = defineProps({
+	index: Number,
 	address: Object as PropType<AddressProps>,
-	push: Boolean,
+	onClose: Function,
 })
 
+console.log('index', props.index)
 const suggestions = useStateSuggestions()
 const addresses = useAddressesStore()
 const addr = useAddressStore()
@@ -27,8 +29,13 @@ addr.set(props.address || emptyAddress())
 		class="form"
 		@submit.prevent="
 			() => {
-				if (props.push) {
-					addresses.push(JSON.parse(JSON.stringify({ ...addr.$state.data })))
+				if (props.index !== undefined) {
+					console.log('edit')
+					addresses.edit(addr.$state.data, props.index)
+					if (props.onClose) props.onClose()
+				} else {
+					console.log('create')
+					addresses.push(addr.$state.data)
 					addr.reset()
 				}
 			}
@@ -138,7 +145,7 @@ addr.set(props.address || emptyAddress())
 					v-on:input="addr.$state.data.localidade.valid = $event.target?.value"
 					v-on:blur="
 						() => {
-							if (addr.$state.data.localidade.valid.length === 0) {
+							if (addr.$state.data.localidade.value.length === 0) {
 								addr.$state.data.localidade.valid =
 									'Erro: Cidade não pode ser um campo vazio'
 							} else {
@@ -202,7 +209,7 @@ addr.set(props.address || emptyAddress())
 					required
 					:id="$t('sing_in.form.numero.id')"
 					:placeholder="$t('sing_in.form.numero.placeholder')"
-					v-bind:value="addr.$state.data.numero"
+					v-bind:value="addr.$state.data.numero.value"
 					v-on:input="
 						$event => {
 							addr.$state.data.numero.value = $event.target?.value

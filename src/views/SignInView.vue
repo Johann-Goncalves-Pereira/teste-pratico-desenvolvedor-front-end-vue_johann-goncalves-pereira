@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import FormAddresses from '@/components/FormAddresses/FormAddresses.vue'
-import { emptyAddress } from '@/stores/address'
 </script>
 
 <template>
 	<main>
 		<h1>Preencha o seu endereço</h1>
-		<FormAddresses :address="emptyAddress()" :push="true" />
+		<FormAddresses />
 	</main>
 </template>
 
