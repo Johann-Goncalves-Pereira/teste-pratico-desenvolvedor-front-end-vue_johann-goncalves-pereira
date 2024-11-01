@@ -18,9 +18,17 @@ const checkEmpty = () => {
 		address => address.cep.value !== '' && address.numero.value !== '',
 	)
 }
-
 const handleGetIndex = (address: AddressProps) => {
-	return addresses.$state.findIndex(ad => ad.cep.value === address.cep.value)
+	return addresses.$state.findIndex(ad => {
+		if (
+			ad.cep.value === address.cep.value &&
+			ad.numero.value === address.numero.value &&
+			ad.complemento === address.complemento
+		)
+			return true
+
+		return false
+	})
 }
 const handleOpenDialog = (id: string, address: AddressProps) => {
 	editAddress.value = handleGetIndex(address)

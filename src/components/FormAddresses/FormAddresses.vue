@@ -67,7 +67,7 @@ addr.set(props.address || emptyAddress())
 						$event => {
 							addr.cepFormat($event.target?.value)
 							$event.target.value = addr.$state.data.cep.formatted
-							if (addr.$state.data.cep.value.length === 8) {
+							if (addr.$state.data.cep.value?.length === 8) {
 								addr.fetchAddress()
 							} else {
 								addr.$state.data.estado = ''
@@ -80,14 +80,14 @@ addr.set(props.address || emptyAddress())
 					"
 					v-on:blur="
 						() => {
-							if (addr.$state.data.cep.value.length === 0) {
+							if (addr.$state.data.cep.value?.length === 0) {
 								addr.$state.data.cep.valid =
 									'Erro: CEP não pode ser um campo vazio'
 							}
-							if (addr.$state.data.cep.value.length !== 9) {
+							if (addr.$state.data.cep.value?.length !== 9) {
 								addr.$state.data.cep.valid = 'Erro: CEP deve ter 8 digitos'
 							}
-							if (addr.$state.data.cep.value.length === 8) {
+							if (addr.$state.data.cep.value?.length === 8) {
 								addr.$state.data.cep.valid = ''
 							}
 						}
@@ -123,7 +123,7 @@ addr.set(props.address || emptyAddress())
 								addr.$state.data.uf.valid = 'Erro: Campo UF não existe'
 							}
 
-							if ($event.target?.value.length === 0) {
+							if ($event.target.value?.length === 0) {
 								addr.$state.data.uf.valid = 'Erro: Campo UF está vazio'
 							}
 						}
@@ -153,10 +153,10 @@ addr.set(props.address || emptyAddress())
 					:id="$t('sing_in.form.localidade.id')"
 					:placeholder="$t('sing_in.form.localidade.placeholder')"
 					v-bind:value="addr.$state.data.localidade.value"
-					v-on:input="addr.$state.data.localidade.valid = $event.target?.value"
+					v-on:input="addr.$state.data.localidade.value = $event.target?.value"
 					v-on:blur="
 						() => {
-							if (addr.$state.data.localidade.value.length === 0) {
+							if (addr.$state.data.localidade.value?.length === 0) {
 								addr.$state.data.localidade.valid =
 									'Erro: Cidade não pode ser um campo vazio'
 							} else {
@@ -190,15 +190,12 @@ addr.set(props.address || emptyAddress())
 					:id="$t('sing_in.form.logradouro.id')"
 					:placeholder="$t('sing_in.form.logradouro.placeholder')"
 					v-bind:value="addr.$state.data.logradouro.value"
-					v-on:input="
-						$event => {
-							addr.$state.data.logradouro = $event.target?.value
-							$event.target.value = addr.$state.data.logradouro.value
-						}
-					"
+					v-on:input="addr.$state.data.logradouro = $event.target.value"
 					v-on:blur="
 						() => {
-							if (addr.$state.data.logradouro.value.length === 0) {
+							if (!(typeof addr.$state.data.logradouro === 'object')) return
+
+							if (addr.$state.data.logradouro.value?.length === 0) {
 								addr.$state.data.logradouro.valid =
 									'Erro: Logradouro não pode ser um campo vazio'
 							} else {
